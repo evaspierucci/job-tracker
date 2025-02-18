@@ -19,11 +19,11 @@ struct JobApplication: Identifiable, Codable {
         
         var color: Color {
             switch self {
-            case .applied: return .statusDone
-            case .interviewing: return .statusWorking
-            case .offerReceived: return .statusDone
-            case .rejected: return .statusStuck
+            case .applied: return .blue
+            case .interviewing: return .yellow
+            case .offerReceived: return .green
+            case .rejected: return .red
             }
         }
     }
-} 
+}

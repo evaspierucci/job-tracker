@@ -18,34 +18,40 @@ struct JobDashboardView: View {
                     .background(colorScheme == .dark ? Color(white: 0.1) : .tableBackground)
                 
                 // Job Applications List
-                List {
-                    ForEach($viewModel.applications) { $application in
-                        JobApplicationRow(application: $application)
-                            .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
-                            .listRowBackground(colorScheme == .dark ? Color(white: 0.15) : .white)
+                ScrollView {
+                    LazyVStack(spacing: 12) {
+                        ForEach($viewModel.applications) { $application in
+                            JobApplicationRow(application: $application)
+                                .padding(.horizontal)
+                                .transition(.scale.combined(with: .opacity))
+                        }
                     }
-                    .onDelete(perform: viewModel.deleteApplication)
+                    .padding(.vertical)
                 }
-                .listStyle(.plain)
-                .background(colorScheme == .dark ? Color(white: 0.1) : .tableBackground)
+                .background(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color.dashboardGradientStart,
+                            Color.dashboardGradientEnd
+                        ]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
             }
             .navigationTitle("Job Applications")
             .toolbar {
-                #if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: viewModel.addApplication) {
+                ToolbarItem(placement: .primaryAction) {
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            viewModel.addApplication()
+                        }
+                    }) {
                         Image(systemName: "plus.circle.fill")
-                            .foregroundColor(.blue)
+                            .font(.title2)
+                            .foregroundColor(Color.addButton)
                     }
                 }
-                #else
-                ToolbarItem {
-                    Button(action: viewModel.addApplication) {
-                        Image(systemName: "plus.circle.fill")
-                            .foregroundColor(.blue)
-                    }
-                }
-                #endif
             }
         }
     }
@@ -57,11 +63,22 @@ struct StatusView: View {
     var body: some View {
         Text(status.rawValue)
             .font(.subheadline)
-            .foregroundColor(.white)
+            .foregroundColor(status.color)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(status.color)
-            .cornerRadius(6)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(getBackgroundColor(for: status))
+            )
+    }
+    
+    private func getBackgroundColor(for status: JobApplication.ApplicationStatus) -> Color {
+        switch status {
+        case .offerReceived: return Color.statusOfferBg
+        case .interviewing: return Color.statusInterviewingBg
+        case .applied: return Color.statusAppliedBg
+        case .rejected: return Color.statusRejectedBg
+        }
     }
 }
 
@@ -99,48 +116,94 @@ struct HeaderRow: View {
                 .frame(width: 100, alignment: .leading)
             Text("Notes")
                 .frame(minWidth: 100, alignment: .leading)
+            Spacer()
+                .frame(width: 24) // Space for delete button
         }
         .padding(.vertical, 12)
+        .padding(.horizontal, 10)
         .font(.headline)
+        .foregroundColor(Color.primaryText)
     }
 }
 
 struct JobApplicationRow: View {
     @Binding var application: JobApplication
+    @State private var isHovered = false
     
     var body: some View {
-        HStack(spacing: 16) {
-            TextField("Job Title", text: $application.jobTitle)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .frame(width: 150, alignment: .leading)
-            
-            TextField("Company", text: $application.companyName)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .frame(width: 150, alignment: .leading)
-            
-            DatePicker("", selection: $application.applicationDate, displayedComponents: .date)
-                .frame(width: 100)
-                .labelsHidden()
-            
-            Menu {
-                ForEach(JobApplication.ApplicationStatus.allCases, id: \.self) { status in
-                    Button(action: { application.status = status }) {
-                        Text(status.rawValue)
+        VStack {
+            HStack(spacing: 16) {
+                TextField("Job Title", text: $application.jobTitle)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .font(.headline)
+                    .frame(width: 150, alignment: .leading)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                
+                TextField("Company", text: $application.companyName)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .font(.headline)
+                    .frame(width: 150, alignment: .leading)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                
+                DatePicker("", selection: $application.applicationDate, displayedComponents: .date)
+                    .frame(width: 100)
+                    .labelsHidden()
+                    .font(.subheadline)
+                
+                Menu {
+                    ForEach(JobApplication.ApplicationStatus.allCases, id: \.self) { status in
+                        Button(action: { 
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                application.status = status 
+                            }
+                        }) {
+                            Label(status.rawValue, systemImage: "circle.fill")
+                                .foregroundColor(status.color)
+                        }
                     }
-                }
-            } label: {
-                StatusView(status: application.status)
+                } label: {
+                    HStack {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(application.status.color)
+                            .opacity(application.status == .offerReceived ? 1 : 0)
+                        StatusView(status: application.status)
+                    }
                     .frame(width: 120, alignment: .leading)
+                }
+                
+                ProgressBar(progress: application.progress)
+                    .frame(width: 100, height: 8)
+                
+                TextField("Notes", text: $application.notes)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .font(.subheadline)
+                    .frame(minWidth: 100)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                
+                Button(action: {}) {
+                    Image(systemName: "trash.fill")
+                        .foregroundColor(Color.deleteButton)
+                        .opacity(isHovered ? 1 : 0)
+                }
             }
-            
-            ProgressBar(progress: 0.6)
-                .frame(width: 100, height: 8)
-            
-            TextField("Notes", text: $application.notes)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .frame(minWidth: 100)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
         }
-        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color.rowFill)
+                .shadow(color: Color.rowShadow, radius: 4, x: 0, y: 2)
+        )
+        .scaleEffect(isHovered ? 1.02 : 1.0)
+        .animation(.easeInOut(duration: 0.2), value: isHovered)
+        #if os(macOS)
+        .onHover { hovering in
+            isHovered = hovering
+        }
+        #endif
     }
     
     private func openURL(_ urlString: String) {
