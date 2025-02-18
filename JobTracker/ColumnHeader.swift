@@ -17,6 +17,8 @@ struct ColumnHeader<FilterContent: View>: View {
                 HStack(spacing: 4) {
                     Text(title)
                         .foregroundColor(.primary)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
                     
                     if currentSort == sortOption {
                         Image(systemName: sortOrder.systemImageName)
@@ -26,6 +28,7 @@ struct ColumnHeader<FilterContent: View>: View {
                 }
             }
             .buttonStyle(.plain)
+            .frame(maxWidth: .infinity, alignment: .leading)
             
             // Filter
             Button(action: { showingFilter.toggle() }) {
@@ -40,7 +43,7 @@ struct ColumnHeader<FilterContent: View>: View {
                     .frame(minWidth: 200)
             }
         }
-        .frame(width: width, alignment: .leading)
-        .padding(.horizontal, 8)
+        .frame(width: width - TableLayout.horizontalPadding * 2)
+        .padding(.horizontal, TableLayout.horizontalPadding)
     }
 } 

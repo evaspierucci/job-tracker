@@ -15,33 +15,37 @@ struct JobDashboardView: View {
                 // Search and Filter Controls
                 SearchFilterView(viewModel: viewModel)
                 
-                // Header
-                HeaderRow(viewModel: viewModel)
-                    .padding(.horizontal)
-                    .background(colorScheme == .dark ? Color(white: 0.1) : .tableBackground)
-                
-                // Job Applications List
-                List {
-                    ForEach(viewModel.filteredApplications) { application in
-                        JobApplicationRow(
-                            application: Binding(
-                                get: { application },
-                                set: { newValue in
-                                    if let index = viewModel.applications.firstIndex(where: { $0.id == application.id }) {
-                                        viewModel.applications[index] = newValue
-                                        viewModel.updateApplication(newValue)
-                                    }
+                // Scrollable Table Container
+                ScrollView(.horizontal, showsIndicators: true) {
+                    VStack(spacing: 0) {
+                        // Header
+                        HeaderRow(viewModel: viewModel)
+                            .background(colorScheme == .dark ? Color(white: 0.1) : .tableBackground)
+                        
+                        // Job Applications List
+                        List {
+                            ForEach(viewModel.filteredApplications) { application in
+                                JobApplicationRow(
+                                    application: Binding(
+                                        get: { application },
+                                        set: { newValue in
+                                            if let index = viewModel.applications.firstIndex(where: { $0.id == application.id }) {
+                                                viewModel.applications[index] = newValue
+                                                viewModel.updateApplication(newValue)
+                                            }
+                                        }
+                                    ),
+                                    viewModel: viewModel
+                                ) {
+                                    viewModel.deleteApplication(id: application.id)
                                 }
-                            ),
-                            viewModel: viewModel
-                        ) {
-                            viewModel.deleteApplication(id: application.id)
+                                .transition(.opacity.combined(with: .scale))
+                            }
                         }
-                        .padding(.horizontal)
-                        .transition(.opacity.combined(with: .scale))
+                        .listStyle(.plain)
                     }
+                    .frame(minWidth: totalWidth)
                 }
-                .listStyle(.plain)
                 .background(colorScheme == .dark ? Color(white: 0.1) : .tableBackground)
             }
             .navigationTitle("Job Applications")
@@ -59,6 +63,19 @@ struct JobDashboardView: View {
                 }
             }
         }
+    }
+    
+    private var totalWidth: CGFloat {
+        TableLayout.jobTitle +
+        TableLayout.company +
+        TableLayout.date +
+        TableLayout.status +
+        TableLayout.location +
+        TableLayout.link +
+        TableLayout.notes +
+        TableLayout.actions +
+        (TableLayout.spacing * 7) +
+        (TableLayout.horizontalPadding * 2)
     }
 }
 
@@ -112,13 +129,13 @@ struct HeaderRow: View {
     @State private var showingLocationFilter = false
     
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: TableLayout.spacing) {
             ColumnHeader(
                 title: "Job Title",
                 sortOption: .jobTitle,
                 currentSort: viewModel.currentSort,
                 sortOrder: viewModel.sortOrder,
-                width: 150,
+                width: TableLayout.jobTitle,
                 onSort: { viewModel.toggleSort(.jobTitle) },
                 showingFilter: $showingJobTitleFilter
             ) {
@@ -130,7 +147,7 @@ struct HeaderRow: View {
                 sortOption: .company,
                 currentSort: viewModel.currentSort,
                 sortOrder: viewModel.sortOrder,
-                width: 150,
+                width: TableLayout.company,
                 onSort: { viewModel.toggleSort(.company) },
                 showingFilter: $showingCompanyFilter
             ) {
@@ -138,11 +155,11 @@ struct HeaderRow: View {
             }
             
             ColumnHeader(
-                title: "Date",
+                title: "Application\nDate",
                 sortOption: .date,
                 currentSort: viewModel.currentSort,
                 sortOrder: viewModel.sortOrder,
-                width: 100,
+                width: TableLayout.date,
                 onSort: { viewModel.toggleSort(.date) },
                 showingFilter: $showingDateFilter
             ) {
@@ -154,39 +171,47 @@ struct HeaderRow: View {
                 sortOption: .status,
                 currentSort: viewModel.currentSort,
                 sortOrder: viewModel.sortOrder,
-                width: 120,
+                width: TableLayout.status,
                 onSort: { viewModel.toggleSort(.status) },
                 showingFilter: $showingStatusFilter
             ) {
                 StatusFilterView(viewModel: viewModel)
             }
+            .frame(width: TableLayout.status, alignment: .leading)
             
-            ColumnHeader(
-                title: "Location",
-                sortOption: .location,
-                currentSort: viewModel.currentSort,
-                sortOrder: viewModel.sortOrder,
-                width: 150,
-                onSort: { viewModel.toggleSort(.location) },
-                showingFilter: $showingLocationFilter
-            ) {
-                LocationFilterView(viewModel: viewModel)
+            HStack {
+                ColumnHeader(
+                    title: "Location",
+                    sortOption: .location,
+                    currentSort: viewModel.currentSort,
+                    sortOrder: viewModel.sortOrder,
+                    width: TableLayout.location,
+                    onSort: { viewModel.toggleSort(.location) },
+                    showingFilter: $showingLocationFilter
+                ) {
+                    LocationFilterView(viewModel: viewModel)
+                }
             }
+            .frame(width: TableLayout.location, alignment: .leading)
+            .padding(.leading, TableLayout.horizontalPadding)
             
-            Text("Link")
-                .frame(width: 150, alignment: .leading)
-                .padding(.leading, 8)
+            HStack {
+                Text("Link")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .frame(width: TableLayout.link)
+            .padding(.leading, TableLayout.horizontalPadding)
             
             Text("Notes")
-                .frame(minWidth: 100, alignment: .leading)
-                .padding(.leading, 8)
+                .frame(width: TableLayout.notes, alignment: .leading)
+                .padding(.horizontal, TableLayout.horizontalPadding)
             
             Spacer()
-                .frame(width: 24)
+                .frame(width: TableLayout.actions)
         }
+        .padding(.horizontal, TableLayout.horizontalPadding)
         .padding(.vertical, 12)
         .font(.headline)
-        .foregroundColor(Color.primaryText)
     }
 }
 
@@ -195,113 +220,109 @@ struct JobApplicationRow: View {
     @ObservedObject var viewModel: JobApplicationViewModel
     @State private var isHovered = false
     @State private var showingDeleteAlert = false
-    @State private var isVisible = false  // New state to control appearance
-    var onDelete: () -> Void
+    let onDelete: () -> Void
     
     var body: some View {
-        VStack {
-            HStack(spacing: 16) {
-                TextField("Job Title", text: $application.jobTitle)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .frame(width: 150, alignment: .leading)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-                    .onChange(of: application.jobTitle) { oldValue, newValue in
-                        viewModel.updateApplication(application)
-                    }
-                
-                TextField("Company", text: $application.companyName)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .frame(width: 150, alignment: .leading)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-                    .onChange(of: application.companyName) { oldValue, newValue in
-                        viewModel.updateApplication(application)
-                    }
-                
-                DatePicker("", selection: $application.applicationDate, displayedComponents: .date)
-                    .frame(width: 100)
-                    .labelsHidden()
-                    .onChange(of: application.applicationDate) { oldValue, newValue in
-                        viewModel.updateApplication(application)
-                    }
-                
-                Menu {
-                    ForEach(JobApplication.ApplicationStatus.allCases, id: \.self) { status in
-                        Button(action: { 
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                application.status = status
-                                viewModel.updateApplication(application)
-                            }
-                        }) {
-                            HStack {
-                                Circle()
-                                    .fill(status.iconColor)
-                                    .frame(width: 8, height: 8)
-                                Text(status.rawValue)
-                                    .foregroundColor(status.iconColor)
-                            }
-                        }
-                    }
-                } label: {
-                    StatusView(status: application.status)
-                        .frame(width: 120, alignment: .leading)
+        HStack(spacing: TableLayout.spacing) {
+            TextField("Job Title", text: $application.jobTitle)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .frame(width: TableLayout.jobTitle)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+                .onChange(of: application.jobTitle) { _, _ in
+                    viewModel.updateApplication(application)
                 }
-                
-                LocationField(location: $application.location)
-                    .onChange(of: application.location) { oldValue, newValue in
-                        viewModel.updateApplication(application)
-                    }
-                
-                HStack(spacing: 4) {
-                    TextField("Enter application link", text: $application.applicationLink)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .frame(width: 120, alignment: .leading)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.8)
-                        #if os(iOS)
-                        .keyboardType(.URL)
-                        .autocapitalization(.none)
-                        #endif
-                        .onChange(of: application.applicationLink) { oldValue, newValue in
+            
+            TextField("Company", text: $application.companyName)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .frame(width: TableLayout.company)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+                .onChange(of: application.companyName) { _, _ in
+                    viewModel.updateApplication(application)
+                }
+            
+            DatePicker("", selection: $application.applicationDate, displayedComponents: .date)
+                .frame(width: TableLayout.date)
+                .labelsHidden()
+                .onChange(of: application.applicationDate) { _, _ in
+                    viewModel.updateApplication(application)
+                }
+            
+            Menu {
+                ForEach(JobApplication.ApplicationStatus.allCases, id: \.self) { status in
+                    Button(action: { 
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            application.status = status
                             viewModel.updateApplication(application)
                         }
-                    
-                    if let _ = URL(string: application.applicationLink),
-                       !application.applicationLink.isEmpty {
-                        Button(action: {
-                            openURL(application.applicationLink)
-                        }) {
-                            Image(systemName: "arrow.up.right.circle")
-                                .foregroundColor(.blue)
-                                .font(.system(size: 16))
+                    }) {
+                        HStack {
+                            Circle()
+                                .fill(status.iconColor)
+                                .frame(width: 8, height: 8)
+                            Text(status.rawValue)
+                                .foregroundColor(status.iconColor)
                         }
-                        .buttonStyle(.plain)
                     }
                 }
-                .frame(width: 150, alignment: .leading)
-                
-                TextField("Notes", text: $application.notes)
+            } label: {
+                StatusView(status: application.status)
+                    .frame(width: TableLayout.status, alignment: .leading)
+            }
+            
+            LocationField(location: $application.location)
+                .frame(width: TableLayout.location)
+                .onChange(of: application.location) { _, _ in
+                    viewModel.updateApplication(application)
+                }
+            
+            HStack(spacing: 4) {
+                TextField("Enter application link", text: $application.applicationLink)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .frame(minWidth: 100)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
-                    .onChange(of: application.notes) { oldValue, newValue in
+                    #if os(iOS)
+                    .keyboardType(.URL)
+                    .autocapitalization(.none)
+                    #endif
+                    .onChange(of: application.applicationLink) { _, _ in
                         viewModel.updateApplication(application)
                     }
                 
-                Button(action: {
-                    showingDeleteAlert = true
-                }) {
-                    Image(systemName: "trash.fill")
-                        .foregroundColor(Color.deleteButton)
-                        .opacity(isHovered || isVisible ? 1 : 0)
+                if let _ = URL(string: application.applicationLink),
+                   !application.applicationLink.isEmpty {
+                    Button(action: {
+                        openURL(application.applicationLink)
+                    }) {
+                        Image(systemName: "arrow.up.right.circle")
+                            .foregroundColor(.blue)
+                    }
+                    .buttonStyle(.plain)
                 }
-                .frame(width: 24, height: 24)
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
+            .frame(width: TableLayout.link)
+            
+            TextField("Notes", text: $application.notes)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .frame(width: TableLayout.notes)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+                .onChange(of: application.notes) { _, _ in
+                    viewModel.updateApplication(application)
+                }
+            
+            Button(action: {
+                showingDeleteAlert = true
+            }) {
+                Image(systemName: "trash.fill")
+                    .foregroundColor(Color.deleteButton)
+                    .opacity(isHovered ? 1 : 0)
+            }
+            .frame(width: TableLayout.actions)
         }
+        .padding(.horizontal, TableLayout.horizontalPadding)
+        .padding(.vertical, 5)
         .background(
             RoundedRectangle(cornerRadius: 10)
                 .fill(Color.rowFill)
@@ -313,19 +334,11 @@ struct JobApplicationRow: View {
             isHovered = hovering
         }
         #endif
-        .onAppear {
-            // Ensure the row is fully rendered before showing hover effects
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    isVisible = true
-                }
-            }
-        }
         .alert("Delete Job Application", isPresented: $showingDeleteAlert) {
             Button("Cancel", role: .cancel) { }
             Button("Delete", role: .destructive) {
                 withAnimation(.easeInOut(duration: 0.2)) {
-                    viewModel.deleteApplication(id: application.id)
+                    onDelete()
                 }
             }
         } message: {
@@ -350,7 +363,6 @@ struct SearchFilterView: View {
     var body: some View {
         VStack(spacing: 12) {
             HStack(spacing: 16) {
-                // Search Bar
                 HStack {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(.gray)
@@ -358,9 +370,7 @@ struct SearchFilterView: View {
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                 }
                 
-                // Filter Button
                 Menu {
-                    // Status Filter
                     Menu("Status") {
                         ForEach(JobApplication.ApplicationStatus.allCases, id: \.self) { status in
                             Toggle(status.rawValue, isOn: Binding(
@@ -376,7 +386,6 @@ struct SearchFilterView: View {
                         }
                     }
                     
-                    // Date Range Picker
                     DatePicker(
                         "Start Date",
                         selection: Binding(
@@ -417,7 +426,6 @@ struct SearchFilterView: View {
             }
             .padding(.horizontal)
             
-            // Active Filter Tags
             if !viewModel.selectedStatuses.isEmpty || viewModel.dateRange != nil {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
