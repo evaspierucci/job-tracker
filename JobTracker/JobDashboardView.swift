@@ -20,10 +20,23 @@ struct JobDashboardView: View {
                 // Job Applications List
                 ScrollView {
                     LazyVStack(spacing: 12) {
-                        ForEach($viewModel.applications) { $application in
-                            JobApplicationRow(application: $application)
+                        if viewModel.applications.isEmpty {
+                            // Show empty state
+                            Text("No job applications yet")
+                                .foregroundColor(.secondary)
+                                .padding()
+                        } else {
+                            ForEach($viewModel.applications) { $application in
+                                JobApplicationRow(application: $application) {
+                                    // Delete handler with safety check
+                                    if let index = viewModel.applications.firstIndex(where: { $0.id == application.id }),
+                                       viewModel.isValidIndex(index) {
+                                        viewModel.applications.remove(at: index)
+                                    }
+                                }
                                 .padding(.horizontal)
-                                .transition(.scale.combined(with: .opacity))
+                                .transition(.opacity.combined(with: .scale))
+                            }
                         }
                     }
                     .padding(.vertical)
@@ -112,8 +125,8 @@ struct HeaderRow: View {
                 .frame(width: 100, alignment: .leading)
             Text("Status")
                 .frame(width: 120, alignment: .leading)
-            Text("Progress")
-                .frame(width: 100, alignment: .leading)
+            Text("Link")
+                .frame(width: 150, alignment: .leading)
             Text("Notes")
                 .frame(minWidth: 100, alignment: .leading)
             Spacer()
@@ -129,6 +142,9 @@ struct HeaderRow: View {
 struct JobApplicationRow: View {
     @Binding var application: JobApplication
     @State private var isHovered = false
+    @State private var showingDeleteAlert = false
+    @State private var tempLink: String = ""
+    var onDelete: () -> Void
     
     var body: some View {
         VStack {
@@ -173,8 +189,31 @@ struct JobApplicationRow: View {
                     .frame(width: 120, alignment: .leading)
                 }
                 
-                ProgressBar(progress: application.progress)
-                    .frame(width: 100, height: 8)
+                HStack(spacing: 4) {
+                    TextField("Enter application link", text: $application.applicationLink)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .font(.subheadline)
+                        .frame(width: 120, alignment: .leading)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                        #if os(iOS)
+                        .keyboardType(.URL)
+                        .autocapitalization(.none)
+                        #endif
+                    
+                    if let url = URL(string: application.applicationLink), 
+                       !application.applicationLink.isEmpty {
+                        Button(action: {
+                            openURL(application.applicationLink)
+                        }) {
+                            Image(systemName: "arrow.up.right.circle")
+                                .foregroundColor(.blue)
+                                .font(.system(size: 16))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .frame(width: 150, alignment: .leading)
                 
                 TextField("Notes", text: $application.notes)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -183,7 +222,9 @@ struct JobApplicationRow: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
                 
-                Button(action: {}) {
+                Button(action: {
+                    showingDeleteAlert = true
+                }) {
                     Image(systemName: "trash.fill")
                         .foregroundColor(Color.deleteButton)
                         .opacity(isHovered ? 1 : 0)
@@ -204,6 +245,16 @@ struct JobApplicationRow: View {
             isHovered = hovering
         }
         #endif
+        .alert("Delete Job Application", isPresented: $showingDeleteAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    onDelete()
+                }
+            }
+        } message: {
+            Text("Are you sure you want to delete this job application for \(application.jobTitle) at \(application.companyName)?")
+        }
     }
     
     private func openURL(_ urlString: String) {

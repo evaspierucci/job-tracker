@@ -10,29 +10,41 @@ class JobApplicationViewModel: ObservableObject {
     }
     
     private func loadApplications() {
-        // TODO: Implement data loading from persistence
-        // For now, adding sample data
+        // Initialize with an empty array if no data exists
         applications = [
-            JobApplication(jobTitle: "iOS Developer", 
-                         companyName: "Tech Corp", 
-                         applicationDate: Date(), 
-                         status: .applied,
-                         applicationLink: "https://techcorp.com/jobs",
-                         notes: "Initial application submitted")
+            JobApplication(
+                jobTitle: "", 
+                companyName: "", 
+                applicationDate: Date(), 
+                status: .applied,
+                applicationLink: "",
+                notes: ""
+            )
         ]
     }
     
     func addApplication() {
-        let newApplication = JobApplication(jobTitle: "", 
-                                          companyName: "", 
-                                          applicationDate: Date(), 
-                                          status: .applied,
-                                          applicationLink: "",
-                                          notes: "")
-        applications.append(newApplication)
+        let newApplication = JobApplication(
+            jobTitle: "", 
+            companyName: "", 
+            applicationDate: Date(), 
+            status: .applied,
+            applicationLink: "",
+            notes: ""
+        )
+        withAnimation {
+            applications.append(newApplication)
+        }
     }
     
     func deleteApplication(at offsets: IndexSet) {
-        applications.remove(atOffsets: offsets)
+        withAnimation {
+            applications.remove(atOffsets: offsets)
+        }
+    }
+    
+    // Add safety check method
+    func isValidIndex(_ index: Int) -> Bool {
+        return applications.indices.contains(index)
     }
 } 
