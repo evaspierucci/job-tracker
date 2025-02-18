@@ -6,7 +6,13 @@ class PersistenceController {
     let container: NSPersistentContainer
     
     init() {
-        container = NSPersistentContainer(name: "JobTracker")
+        // Ensure the model URL is found
+        guard let modelURL = Bundle.main.url(forResource: "JobTracker", withExtension: "momd"),
+              let model = NSManagedObjectModel(contentsOf: modelURL) else {
+            fatalError("Failed to load Core Data model")
+        }
+        
+        container = NSPersistentContainer(name: "JobTracker", managedObjectModel: model)
         
         container.loadPersistentStores { description, error in
             if let error = error {

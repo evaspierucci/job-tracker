@@ -6,6 +6,20 @@ import SwiftUI
 class JobApplicationViewModel: ObservableObject {
     private let viewContext: NSManagedObjectContext
     @Published var applications: [JobApplication] = []
+    @Published var searchText = ""
+    @Published var selectedStatus: JobApplication.ApplicationStatus?
+    
+    var filteredApplications: [JobApplication] {
+        applications.filter { application in
+            let matchesSearch = searchText.isEmpty || 
+                application.jobTitle.localizedCaseInsensitiveContains(searchText) ||
+                application.companyName.localizedCaseInsensitiveContains(searchText)
+            
+            let matchesStatus = selectedStatus == nil || application.status == selectedStatus
+            
+            return matchesSearch && matchesStatus
+        }
+    }
     
     init(context: NSManagedObjectContext = PersistenceController.shared.container.viewContext) {
         self.viewContext = context
@@ -94,5 +108,10 @@ class JobApplicationViewModel: ObservableObject {
     
     func isValidIndex(_ index: Int) -> Bool {
         return applications.indices.contains(index)
+    }
+    
+    func resetFilters() {
+        searchText = ""
+        selectedStatus = nil
     }
 } 

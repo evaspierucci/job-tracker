@@ -12,6 +12,9 @@ struct JobDashboardView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
+                // Search and Filter Controls
+                SearchFilterView(viewModel: viewModel)
+                
                 // Header
                 HeaderRow()
                     .padding(.horizontal)
@@ -19,8 +22,19 @@ struct JobDashboardView: View {
                 
                 // Job Applications List
                 List {
-                    ForEach($viewModel.applications) { $application in
-                        JobApplicationRow(application: $application, viewModel: viewModel) {
+                    ForEach(viewModel.filteredApplications) { application in
+                        JobApplicationRow(
+                            application: Binding(
+                                get: { application },
+                                set: { newValue in
+                                    if let index = viewModel.applications.firstIndex(where: { $0.id == application.id }) {
+                                        viewModel.applications[index] = newValue
+                                        viewModel.updateApplication(newValue)
+                                    }
+                                }
+                            ),
+                            viewModel: viewModel
+                        ) {
                             viewModel.deleteApplication(id: application.id)
                         }
                         .padding(.horizontal)
@@ -272,5 +286,92 @@ struct JobApplicationRow: View {
         #else
         NSWorkspace.shared.open(url)
         #endif
+    }
+}
+
+struct SearchFilterView: View {
+    @ObservedObject var viewModel: JobApplicationViewModel
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            HStack(spacing: 16) {
+                // Search Bar
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.gray)
+                    TextField("Search by job title or company", text: $viewModel.searchText)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                }
+                
+                // Status Filter
+                Picker("Status", selection: $viewModel.selectedStatus) {
+                    Text("All")
+                        .tag(nil as JobApplication.ApplicationStatus?)
+                    ForEach(JobApplication.ApplicationStatus.allCases, id: \.self) { status in
+                        Text(status.rawValue)
+                            .tag(status as JobApplication.ApplicationStatus?)
+                    }
+                }
+                .frame(width: 150)
+                
+                // Reset Button
+                Button(action: {
+                    withAnimation {
+                        viewModel.resetFilters()
+                    }
+                }) {
+                    Label("Reset", systemImage: "xmark.circle.fill")
+                }
+                .buttonStyle(.borderless)
+                .opacity(
+                    !viewModel.searchText.isEmpty || viewModel.selectedStatus != nil ? 1 : 0
+                )
+            }
+            .padding(.horizontal)
+            
+            // Filter Tags
+            if !viewModel.searchText.isEmpty || viewModel.selectedStatus != nil {
+                HStack(spacing: 8) {
+                    if !viewModel.searchText.isEmpty {
+                        FilterTag(text: "Search: \(viewModel.searchText)") {
+                            viewModel.searchText = ""
+                        }
+                    }
+                    
+                    if let status = viewModel.selectedStatus {
+                        FilterTag(text: "Status: \(status.rawValue)") {
+                            viewModel.selectedStatus = nil
+                        }
+                    }
+                }
+                .padding(.horizontal)
+            }
+        }
+        .padding(.vertical, 8)
+        .background(Color.tableBackground)
+    }
+}
+
+struct FilterTag: View {
+    let text: String
+    let onRemove: () -> Void
+    
+    var body: some View {
+        HStack(spacing: 4) {
+            Text(text)
+                .font(.subheadline)
+            
+            Button(action: onRemove) {
+                Image(systemName: "xmark.circle.fill")
+                    .foregroundColor(.gray)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(
+            RoundedRectangle(cornerRadius: 6)
+                .fill(Color.gray.opacity(0.1))
+        )
     }
 } 
