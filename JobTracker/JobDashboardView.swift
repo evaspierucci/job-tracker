@@ -18,42 +18,17 @@ struct JobDashboardView: View {
                     .background(colorScheme == .dark ? Color(white: 0.1) : .tableBackground)
                 
                 // Job Applications List
-                ScrollView {
-                    LazyVStack(spacing: 12) {
-                        if viewModel.applications.isEmpty {
-                            // Show empty state
-                            Text("No job applications yet")
-                                .foregroundColor(.secondary)
-                                .padding()
-                        } else {
-                            ForEach($viewModel.applications) { $application in
-                                JobApplicationRow(application: $application) {
-                                    if let index = viewModel.applications.firstIndex(where: { $0.id == application.id }),
-                                       viewModel.isValidIndex(index) {
-                                        viewModel.applications.remove(at: index)
-                                    }
-                                }
-                                .padding(.horizontal)
-                                .transition(.asymmetric(
-                                    insertion: .opacity.combined(with: .scale(scale: 0.95)),
-                                    removal: .opacity.combined(with: .scale(scale: 0.95))
-                                ))
-                                .id(application.id)  // Force proper view identity
-                            }
+                List {
+                    ForEach($viewModel.applications) { $application in
+                        JobApplicationRow(application: $application, viewModel: viewModel) {
+                            viewModel.deleteApplication(id: application.id)
                         }
+                        .padding(.horizontal)
+                        .transition(.opacity.combined(with: .scale))
                     }
-                    .padding(.vertical)
                 }
-                .background(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color.dashboardGradientStart,
-                            Color.dashboardGradientEnd
-                        ]),
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
+                .listStyle(.plain)
+                .background(colorScheme == .dark ? Color(white: 0.1) : .tableBackground)
             }
             .navigationTitle("Job Applications")
             .toolbar {
@@ -122,21 +97,32 @@ struct HeaderRow: View {
         HStack(spacing: 16) {
             Text("Job Title")
                 .frame(width: 150, alignment: .leading)
+                .padding(.leading, 8)
+            
             Text("Company")
                 .frame(width: 150, alignment: .leading)
+                .padding(.leading, 8)
+            
             Text("Date")
                 .frame(width: 100, alignment: .leading)
+                .padding(.leading, 8)
+            
             Text("Status")
                 .frame(width: 120, alignment: .leading)
+                .padding(.leading, 8)
+            
             Text("Link")
                 .frame(width: 150, alignment: .leading)
+                .padding(.leading, 8)
+            
             Text("Notes")
                 .frame(minWidth: 100, alignment: .leading)
+                .padding(.leading, 8)
+            
             Spacer()
-                .frame(width: 24) // Space for delete button
+                .frame(width: 24)
         }
         .padding(.vertical, 12)
-        .padding(.horizontal, 10)
         .font(.headline)
         .foregroundColor(Color.primaryText)
     }
@@ -144,6 +130,7 @@ struct HeaderRow: View {
 
 struct JobApplicationRow: View {
     @Binding var application: JobApplication
+    @ObservedObject var viewModel: JobApplicationViewModel
     @State private var isHovered = false
     @State private var showingDeleteAlert = false
     @State private var isVisible = false  // New state to control appearance
@@ -154,22 +141,28 @@ struct JobApplicationRow: View {
             HStack(spacing: 16) {
                 TextField("Job Title", text: $application.jobTitle)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .font(.headline)
                     .frame(width: 150, alignment: .leading)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
+                    .onChange(of: application.jobTitle) { oldValue, newValue in
+                        viewModel.updateApplication(application)
+                    }
                 
                 TextField("Company", text: $application.companyName)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .font(.headline)
                     .frame(width: 150, alignment: .leading)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
+                    .onChange(of: application.companyName) { oldValue, newValue in
+                        viewModel.updateApplication(application)
+                    }
                 
                 DatePicker("", selection: $application.applicationDate, displayedComponents: .date)
                     .frame(width: 100)
                     .labelsHidden()
-                    .font(.subheadline)
+                    .onChange(of: application.applicationDate) { oldValue, newValue in
+                        viewModel.updateApplication(application)
+                    }
                 
                 Menu {
                     ForEach(JobApplication.ApplicationStatus.allCases, id: \.self) { status in
@@ -195,7 +188,6 @@ struct JobApplicationRow: View {
                 HStack(spacing: 4) {
                     TextField("Enter application link", text: $application.applicationLink)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .font(.subheadline)
                         .frame(width: 120, alignment: .leading)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
@@ -203,8 +195,11 @@ struct JobApplicationRow: View {
                         .keyboardType(.URL)
                         .autocapitalization(.none)
                         #endif
+                        .onChange(of: application.applicationLink) { oldValue, newValue in
+                            viewModel.updateApplication(application)
+                        }
                     
-                    if _ == URL(string: application.applicationLink), 
+                    if let _ = URL(string: application.applicationLink),
                        !application.applicationLink.isEmpty {
                         Button(action: {
                             openURL(application.applicationLink)
@@ -220,10 +215,12 @@ struct JobApplicationRow: View {
                 
                 TextField("Notes", text: $application.notes)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .font(.subheadline)
                     .frame(minWidth: 100)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
+                    .onChange(of: application.notes) { oldValue, newValue in
+                        viewModel.updateApplication(application)
+                    }
                 
                 Button(action: {
                     showingDeleteAlert = true
@@ -232,7 +229,7 @@ struct JobApplicationRow: View {
                         .foregroundColor(Color.deleteButton)
                         .opacity(isHovered || isVisible ? 1 : 0)
                 }
-                .frame(width: 24, height: 24)  // Fixed frame for consistency
+                .frame(width: 24, height: 24)
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
@@ -260,7 +257,7 @@ struct JobApplicationRow: View {
             Button("Cancel", role: .cancel) { }
             Button("Delete", role: .destructive) {
                 withAnimation(.easeInOut(duration: 0.2)) {
-                    onDelete()
+                    viewModel.deleteApplication(id: application.id)
                 }
             }
         } message: {

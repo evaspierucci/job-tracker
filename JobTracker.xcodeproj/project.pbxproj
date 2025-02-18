@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		2F63DE5B2D64DF410063202F /* JobTracker.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 2F63DE592D64DF410063202F /* JobTracker.xcdatamodeld */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		2F63DDFF2D64B0FF0063202F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +31,7 @@
 		2F63DDED2D64B0FD0063202F /* JobTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JobTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2F63DDFE2D64B0FF0063202F /* JobTrackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JobTrackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2F63DE082D64B0FF0063202F /* JobTrackerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JobTrackerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2F63DE5A2D64DF410063202F /* JobTracker.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = JobTracker.xcdatamodel; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -75,6 +80,7 @@
 		2F63DDE42D64B0FC0063202F = {
 			isa = PBXGroup;
 			children = (
+				2F63DE592D64DF410063202F /* JobTracker.xcdatamodeld */,
 				2F63DDEF2D64B0FD0063202F /* JobTracker */,
 				2F63DE012D64B0FF0063202F /* JobTrackerTests */,
 				2F63DE0B2D64B0FF0063202F /* JobTrackerUITests */,
@@ -236,6 +242,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2F63DE5B2D64DF410063202F /* JobTracker.xcdatamodeld in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -591,6 +598,19 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		2F63DE592D64DF410063202F /* JobTracker.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				2F63DE5A2D64DF410063202F /* JobTracker.xcdatamodel */,
+			);
+			currentVersion = 2F63DE5A2D64DF410063202F /* JobTracker.xcdatamodel */;
+			path = JobTracker.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 2F63DDE52D64B0FC0063202F /* Project object */;
 }
