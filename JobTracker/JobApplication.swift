@@ -9,6 +9,7 @@ struct JobApplication: Identifiable, Codable {
     var status: ApplicationStatus
     var applicationLink: String
     var notes: String
+    var progress: Double = 0.0
     
     enum ApplicationStatus: String, Codable, CaseIterable {
         case applied = "Applied"
@@ -18,10 +19,10 @@ struct JobApplication: Identifiable, Codable {
         
         var color: Color {
             switch self {
-            case .applied: return .blue
-            case .interviewing: return .orange
-            case .offerReceived: return .green
-            case .rejected: return .red
+            case .applied: return .statusDone
+            case .interviewing: return .statusWorking
+            case .offerReceived: return .statusDone
+            case .rejected: return .statusStuck
             }
         }
     }

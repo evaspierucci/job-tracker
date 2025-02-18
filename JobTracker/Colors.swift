@@ -7,4 +7,4 @@ extension Color {
     static let statusStuck = Color(red: 0.95, green: 0.3, blue: 0.3)
     static let progressBar = Color.blue.opacity(0.3)
     static let progressBarBackground = Color(white: 0.9)
-} 
+}

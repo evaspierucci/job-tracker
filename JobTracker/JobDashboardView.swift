@@ -15,29 +15,34 @@ struct JobDashboardView: View {
                 // Header
                 HeaderRow()
                     .padding(.horizontal)
-                    .background(colorScheme == .dark ? Color(white: 0.1) : Color(white: 0.95))
+                    .background(colorScheme == .dark ? Color(white: 0.1) : .tableBackground)
                 
                 // Job Applications List
                 List {
                     ForEach($viewModel.applications) { $application in
                         JobApplicationRow(application: $application)
+                            .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
+                            .listRowBackground(colorScheme == .dark ? Color(white: 0.15) : .white)
                     }
                     .onDelete(perform: viewModel.deleteApplication)
                 }
                 .listStyle(.plain)
+                .background(colorScheme == .dark ? Color(white: 0.1) : .tableBackground)
             }
             .navigationTitle("Job Applications")
             .toolbar {
                 #if os(iOS)
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: viewModel.addApplication) {
-                        Image(systemName: "plus")
+                        Image(systemName: "plus.circle.fill")
+                            .foregroundColor(.blue)
                     }
                 }
                 #else
                 ToolbarItem {
                     Button(action: viewModel.addApplication) {
-                        Image(systemName: "plus")
+                        Image(systemName: "plus.circle.fill")
+                            .foregroundColor(.blue)
                     }
                 }
                 #endif
@@ -46,9 +51,42 @@ struct JobDashboardView: View {
     }
 }
 
+struct StatusView: View {
+    let status: JobApplication.ApplicationStatus
+    
+    var body: some View {
+        Text(status.rawValue)
+            .font(.subheadline)
+            .foregroundColor(.white)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(status.color)
+            .cornerRadius(6)
+    }
+}
+
+struct ProgressBar: View {
+    let progress: Double
+    
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .leading) {
+                Rectangle()
+                    .fill(Color.progressBarBackground)
+                
+                Rectangle()
+                    .fill(Color.progressBar)
+                    .frame(width: geometry.size.width * progress)
+            }
+        }
+        .frame(height: 8)
+        .cornerRadius(4)
+    }
+}
+
 struct HeaderRow: View {
     var body: some View {
-        HStack {
+        HStack(spacing: 16) {
             Text("Job Title")
                 .frame(width: 150, alignment: .leading)
             Text("Company")
@@ -57,12 +95,12 @@ struct HeaderRow: View {
                 .frame(width: 100, alignment: .leading)
             Text("Status")
                 .frame(width: 120, alignment: .leading)
-            Text("Link")
+            Text("Progress")
                 .frame(width: 100, alignment: .leading)
             Text("Notes")
                 .frame(minWidth: 100, alignment: .leading)
         }
-        .padding(.vertical, 10)
+        .padding(.vertical, 12)
         .font(.headline)
     }
 }
@@ -71,36 +109,38 @@ struct JobApplicationRow: View {
     @Binding var application: JobApplication
     
     var body: some View {
-        HStack {
+        HStack(spacing: 16) {
             TextField("Job Title", text: $application.jobTitle)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
                 .frame(width: 150, alignment: .leading)
             
             TextField("Company", text: $application.companyName)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
                 .frame(width: 150, alignment: .leading)
             
             DatePicker("", selection: $application.applicationDate, displayedComponents: .date)
                 .frame(width: 100)
                 .labelsHidden()
             
-            Picker("Status", selection: $application.status) {
+            Menu {
                 ForEach(JobApplication.ApplicationStatus.allCases, id: \.self) { status in
-                    Text(status.rawValue)
-                        .tag(status)
+                    Button(action: { application.status = status }) {
+                        Text(status.rawValue)
+                    }
                 }
+            } label: {
+                StatusView(status: application.status)
+                    .frame(width: 120, alignment: .leading)
             }
-            .frame(width: 120)
             
-            Button(action: {
-                openURL(application.applicationLink)
-            }) {
-                TextField("Link", text: $application.applicationLink)
-            }
-            .frame(width: 100)
+            ProgressBar(progress: 0.6)
+                .frame(width: 100, height: 8)
             
             TextField("Notes", text: $application.notes)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
                 .frame(minWidth: 100)
         }
-        .padding(.vertical, 5)
+        .padding(.vertical, 8)
     }
     
     private func openURL(_ urlString: String) {
