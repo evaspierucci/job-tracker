@@ -189,4 +189,36 @@ struct CompanyFilterView: View {
             .padding(.top)
         }
     }
+}
+
+struct LinkFilterView: View {
+    @ObservedObject var viewModel: JobApplicationViewModel
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Filter by Link")
+                .font(.headline)
+            
+            // For now, just show a placeholder since we haven't implemented link filtering
+            Text("Link filtering coming soon")
+                .foregroundColor(.gray)
+        }
+        .padding()
+    }
+}
+
+struct NotesFilterView: View {
+    @ObservedObject var viewModel: JobApplicationViewModel
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Filter by Notes")
+                .font(.headline)
+            
+            // For now, just show a placeholder since we haven't implemented notes filtering
+            Text("Notes filtering coming soon")
+                .foregroundColor(.gray)
+        }
+        .padding()
+    }
 } 

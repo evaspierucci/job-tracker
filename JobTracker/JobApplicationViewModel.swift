@@ -18,6 +18,8 @@ class JobApplicationViewModel: ObservableObject {
     @Published var selectedJobTitles: Set<String> = []
     @Published var selectedCompanies: Set<String> = []
     
+    @Published var widthManager = ColumnWidthManager()
+    
     var filteredApplications: [JobApplication] {
         applications
             .filter { application in

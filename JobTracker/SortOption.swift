@@ -22,6 +22,8 @@ enum SortOption: String {
     case date = "Date"
     case status = "Status"
     case location = "Location"
+    case link = "Link"
+    case notes = "Notes"
     
     func compare(_ a: JobApplication, _ b: JobApplication, order: SortOrder) -> Bool {
         switch self {
@@ -45,6 +47,14 @@ enum SortOption: String {
             return order == .ascending ? 
                 a.location.displayString.localizedCompare(b.location.displayString) == .orderedAscending :
                 a.location.displayString.localizedCompare(b.location.displayString) == .orderedDescending
+        case .link:
+            return order == .ascending ? 
+                a.applicationLink.localizedCompare(b.applicationLink) == .orderedAscending :
+                a.applicationLink.localizedCompare(b.applicationLink) == .orderedDescending
+        case .notes:
+            return order == .ascending ? 
+                a.notes.localizedCompare(b.notes) == .orderedAscending :
+                a.notes.localizedCompare(b.notes) == .orderedDescending
         }
     }
 } 

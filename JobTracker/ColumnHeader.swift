@@ -11,14 +11,14 @@ struct ColumnHeader<FilterContent: View>: View {
     let filterContent: () -> FilterContent
     
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 0) {
             // Title and Sort
             Button(action: onSort) {
                 HStack(spacing: 4) {
                     Text(title)
                         .foregroundColor(.primary)
+                        .lineLimit(2)
                         .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
                     
                     if currentSort == sortOption {
                         Image(systemName: sortOrder.systemImageName)
@@ -28,7 +28,10 @@ struct ColumnHeader<FilterContent: View>: View {
                 }
             }
             .buttonStyle(.plain)
+            .padding(.leading, TableLayout.contentPadding)
             .frame(maxWidth: .infinity, alignment: .leading)
+            
+            Spacer()
             
             // Filter
             Button(action: { showingFilter.toggle() }) {
@@ -37,13 +40,13 @@ struct ColumnHeader<FilterContent: View>: View {
                     .font(.caption)
             }
             .buttonStyle(.plain)
+            .padding(.trailing, TableLayout.contentPadding)
             .popover(isPresented: $showingFilter) {
                 filterContent()
                     .padding()
                     .frame(minWidth: 200)
             }
         }
-        .frame(width: width - TableLayout.horizontalPadding * 2)
-        .padding(.horizontal, TableLayout.horizontalPadding)
+        .frame(width: width, alignment: .leading)
     }
 } 

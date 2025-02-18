@@ -35,7 +35,8 @@ struct JobDashboardView: View {
                                             }
                                         }
                                     ),
-                                    viewModel: viewModel
+                                    viewModel: viewModel,
+                                    widthManager: viewModel.widthManager
                                 ) {
                                     viewModel.deleteApplication(id: application.id)
                                 }
@@ -75,29 +76,7 @@ struct JobDashboardView: View {
         TableLayout.notes +
         TableLayout.actions +
         (TableLayout.spacing * 7) +
-        (TableLayout.horizontalPadding * 2)
-    }
-}
-
-struct StatusView: View {
-    let status: JobApplication.ApplicationStatus
-    
-    var body: some View {
-        Text(status.rawValue)
-            .font(.subheadline.weight(.medium))
-            .foregroundColor(status.iconColor)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(
-                RoundedRectangle(cornerRadius: 6)
-                    .fill(status.backgroundColor)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 6)
-                            .strokeBorder(status.iconColor.opacity(0.3), lineWidth: 1)
-                    )
-            )
-            .contentShape(Rectangle())
-            .opacity(status == .archived ? 0.8 : 1.0)  // Slightly dim archived items
+        (TableLayout.contentPadding * 4)
     }
 }
 
@@ -127,84 +106,129 @@ struct HeaderRow: View {
     @State private var showingDateFilter = false
     @State private var showingStatusFilter = false
     @State private var showingLocationFilter = false
+    @State private var showingLinkFilter = false
+    @State private var showingNotesFilter = false
     
     var body: some View {
         HStack(spacing: TableLayout.spacing) {
             // Job Title
-            ColumnHeader(
-                title: "Job Title",
-                sortOption: .jobTitle,
-                currentSort: viewModel.currentSort,
-                sortOrder: viewModel.sortOrder,
-                width: TableLayout.jobTitle,
-                onSort: { viewModel.toggleSort(.jobTitle) },
-                showingFilter: $showingJobTitleFilter
-            ) {
-                JobTitleFilterView(viewModel: viewModel)
+            ResizableColumnHeader(id: "jobTitle", minWidth: TableLayout.minimumWidth, widthManager: viewModel.widthManager) {
+                ColumnHeader(
+                    title: "Job Title",
+                    sortOption: .jobTitle,
+                    currentSort: viewModel.currentSort,
+                    sortOrder: viewModel.sortOrder,
+                    width: viewModel.widthManager.width(for: "jobTitle"),
+                    onSort: { viewModel.toggleSort(.jobTitle) },
+                    showingFilter: $showingJobTitleFilter
+                ) {
+                    JobTitleFilterView(viewModel: viewModel)
+                }
             }
             
             // Company
-            ColumnHeader(
-                title: "Company",
-                sortOption: .company,
-                currentSort: viewModel.currentSort,
-                sortOrder: viewModel.sortOrder,
-                width: TableLayout.company,
-                onSort: { viewModel.toggleSort(.company) },
-                showingFilter: $showingCompanyFilter
-            ) {
-                CompanyFilterView(viewModel: viewModel)
+            ResizableColumnHeader(id: "company", minWidth: TableLayout.minimumWidth, widthManager: viewModel.widthManager) {
+                ColumnHeader(
+                    title: "Company",
+                    sortOption: .company,
+                    currentSort: viewModel.currentSort,
+                    sortOrder: viewModel.sortOrder,
+                    width: viewModel.widthManager.width(for: "company"),
+                    onSort: { viewModel.toggleSort(.company) },
+                    showingFilter: $showingCompanyFilter
+                ) {
+                    CompanyFilterView(viewModel: viewModel)
+                }
             }
             
             // Application Date
-            VStack(alignment: .leading) {
-                Text("Application")
-                Text("Date")
+            ResizableColumnHeader(id: "date", minWidth: TableLayout.minimumWidth, widthManager: viewModel.widthManager) {
+                ColumnHeader(
+                    title: "Application\nDate",
+                    sortOption: .date,
+                    currentSort: viewModel.currentSort,
+                    sortOrder: viewModel.sortOrder,
+                    width: viewModel.widthManager.width(for: "date"),
+                    onSort: { viewModel.toggleSort(.date) },
+                    showingFilter: $showingDateFilter
+                ) {
+                    DateFilterView(viewModel: viewModel)
+                }
             }
-            .frame(width: TableLayout.date - TableLayout.horizontalPadding * 2, alignment: .leading)
-            .padding(.horizontal, TableLayout.horizontalPadding)
             
             // Status
-            ColumnHeader(
-                title: "Status",
-                sortOption: .status,
-                currentSort: viewModel.currentSort,
-                sortOrder: viewModel.sortOrder,
-                width: TableLayout.status,
-                onSort: { viewModel.toggleSort(.status) },
-                showingFilter: $showingStatusFilter
-            ) {
-                StatusFilterView(viewModel: viewModel)
+            ResizableColumnHeader(id: "status", minWidth: TableLayout.minimumWidth, widthManager: viewModel.widthManager) {
+                ColumnHeader(
+                    title: "Status",
+                    sortOption: .status,
+                    currentSort: viewModel.currentSort,
+                    sortOrder: viewModel.sortOrder,
+                    width: viewModel.widthManager.width(for: "status"),
+                    onSort: { viewModel.toggleSort(.status) },
+                    showingFilter: $showingStatusFilter
+                ) {
+                    StatusFilterView(viewModel: viewModel)
+                }
             }
             
             // Location
-            Text("Location")
-                .frame(width: TableLayout.location - TableLayout.horizontalPadding * 2, alignment: .leading)
-                .padding(.horizontal, TableLayout.horizontalPadding)
+            ResizableColumnHeader(id: "location", minWidth: TableLayout.minimumWidth, widthManager: viewModel.widthManager) {
+                ColumnHeader(
+                    title: "Location",
+                    sortOption: .location,
+                    currentSort: viewModel.currentSort,
+                    sortOrder: viewModel.sortOrder,
+                    width: viewModel.widthManager.width(for: "location"),
+                    onSort: { viewModel.toggleSort(.location) },
+                    showingFilter: $showingLocationFilter
+                ) {
+                    LocationFilterView(viewModel: viewModel)
+                }
+            }
             
             // Link
-            Text("Link")
-                .frame(width: TableLayout.link - TableLayout.horizontalPadding * 2, alignment: .leading)
-                .padding(.horizontal, TableLayout.horizontalPadding)
+            ResizableColumnHeader(id: "link", minWidth: TableLayout.minimumWidth, widthManager: viewModel.widthManager) {
+                ColumnHeader(
+                    title: "Link",
+                    sortOption: .link,
+                    currentSort: viewModel.currentSort,
+                    sortOrder: viewModel.sortOrder,
+                    width: viewModel.widthManager.width(for: "link"),
+                    onSort: { viewModel.toggleSort(.link) },
+                    showingFilter: $showingLinkFilter
+                ) {
+                    LinkFilterView(viewModel: viewModel)
+                }
+            }
             
             // Notes
-            Text("Notes")
-                .frame(width: TableLayout.notes - TableLayout.horizontalPadding * 2, alignment: .leading)
-                .padding(.horizontal, TableLayout.horizontalPadding)
+            ResizableColumnHeader(id: "notes", minWidth: TableLayout.minimumWidth, widthManager: viewModel.widthManager) {
+                ColumnHeader(
+                    title: "Notes",
+                    sortOption: .notes,
+                    currentSort: viewModel.currentSort,
+                    sortOrder: viewModel.sortOrder,
+                    width: viewModel.widthManager.width(for: "notes"),
+                    onSort: { viewModel.toggleSort(.notes) },
+                    showingFilter: $showingNotesFilter
+                ) {
+                    NotesFilterView(viewModel: viewModel)
+                }
+            }
             
             // Actions
             Spacer()
                 .frame(width: TableLayout.actions)
         }
-        .padding(.horizontal, TableLayout.horizontalPadding)
-        .padding(.vertical, 12)
-        .font(.headline)
+        .frame(height: 32)  // Fixed header height
+        .padding(.horizontal, TableLayout.contentPadding)
     }
 }
 
 struct JobApplicationRow: View {
     @Binding var application: JobApplication
     @ObservedObject var viewModel: JobApplicationViewModel
+    @ObservedObject var widthManager: ColumnWidthManager
     @State private var isHovered = false
     @State private var showingDeleteAlert = false
     let onDelete: () -> Void
@@ -214,20 +238,19 @@ struct JobApplicationRow: View {
             // Job Title
             TextField("Job Title", text: $application.jobTitle)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
-                .frame(width: TableLayout.jobTitle - TableLayout.horizontalPadding * 2)
-                .padding(.horizontal, TableLayout.horizontalPadding)
+                .frame(width: viewModel.widthManager.width(for: "jobTitle"))
+                .padding(.leading, TableLayout.contentPadding)
             
             // Company
             TextField("Company", text: $application.companyName)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
-                .frame(width: TableLayout.company - TableLayout.horizontalPadding * 2)
-                .padding(.horizontal, TableLayout.horizontalPadding)
+                .frame(width: viewModel.widthManager.width(for: "company"))
+                .padding(.leading, TableLayout.contentPadding)
             
             // Date
             DatePicker("", selection: $application.applicationDate, displayedComponents: .date)
-                .frame(width: TableLayout.date - TableLayout.horizontalPadding * 2)
-                .padding(.horizontal, TableLayout.horizontalPadding)
-                .labelsHidden()
+                .frame(width: viewModel.widthManager.width(for: "date"))
+                .padding(.leading, TableLayout.contentPadding)
             
             // Status
             Menu {
@@ -250,13 +273,13 @@ struct JobApplicationRow: View {
             } label: {
                 StatusView(status: application.status)
             }
-            .frame(width: TableLayout.status - TableLayout.horizontalPadding * 2)
-            .padding(.horizontal, TableLayout.horizontalPadding)
+            .frame(width: viewModel.widthManager.width(for: "status"))
+            .padding(.leading, TableLayout.contentPadding)
             
             // Location
             LocationField(location: $application.location)
-                .frame(width: TableLayout.location - TableLayout.horizontalPadding * 2)
-                .padding(.horizontal, TableLayout.horizontalPadding)
+                .frame(width: viewModel.widthManager.width(for: "location"))
+                .padding(.leading, TableLayout.contentPadding)
             
             // Link
             HStack(spacing: 4) {
@@ -270,14 +293,14 @@ struct JobApplicationRow: View {
                     .buttonStyle(.plain)
                 }
             }
-            .frame(width: TableLayout.link - TableLayout.horizontalPadding * 2)
-            .padding(.horizontal, TableLayout.horizontalPadding)
+            .frame(width: viewModel.widthManager.width(for: "link"))
+            .padding(.leading, TableLayout.contentPadding)
             
             // Notes
             TextField("Notes", text: $application.notes)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
-                .frame(width: TableLayout.notes - TableLayout.horizontalPadding * 2)
-                .padding(.horizontal, TableLayout.horizontalPadding)
+                .frame(width: viewModel.widthManager.width(for: "notes"))
+                .padding(.leading, TableLayout.contentPadding)
             
             // Delete button
             Button(action: { showingDeleteAlert = true }) {
@@ -286,8 +309,8 @@ struct JobApplicationRow: View {
                     .opacity(isHovered ? 1 : 0)
             }
             .frame(width: TableLayout.actions)
+            .padding(.horizontal, TableLayout.contentPadding)
         }
-        .padding(.horizontal, TableLayout.horizontalPadding)
         .padding(.vertical, 5)
         .background(
             RoundedRectangle(cornerRadius: 10)
