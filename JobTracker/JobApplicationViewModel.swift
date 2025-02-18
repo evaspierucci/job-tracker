@@ -15,6 +15,9 @@ class JobApplicationViewModel: ObservableObject {
     @Published var selectedLocations: Set<String> = []
     @Published var dateRange: ClosedRange<Date>?
     
+    @Published var selectedJobTitles: Set<String> = []
+    @Published var selectedCompanies: Set<String> = []
+    
     var filteredApplications: [JobApplication] {
         applications
             .filter { application in
@@ -22,16 +25,24 @@ class JobApplicationViewModel: ObservableObject {
                     application.jobTitle.localizedCaseInsensitiveContains(searchText) ||
                     application.companyName.localizedCaseInsensitiveContains(searchText)
                 
-                let matchesStatus = selectedStatuses.isEmpty || selectedStatuses.contains(application.status)
+                let matchesStatus = selectedStatuses.isEmpty || 
+                    selectedStatuses.contains(application.status)
                 
                 let matchesLocation = selectedLocations.isEmpty || 
                     selectedLocations.contains(application.location.displayString)
+                
+                let matchesJobTitle = selectedJobTitles.isEmpty || 
+                    selectedJobTitles.contains(application.jobTitle)
+                
+                let matchesCompany = selectedCompanies.isEmpty || 
+                    selectedCompanies.contains(application.companyName)
                 
                 let matchesDate = dateRange.map { range in
                     range.contains(application.applicationDate)
                 } ?? true
                 
-                return matchesSearch && matchesStatus && matchesLocation && matchesDate
+                return matchesSearch && matchesStatus && matchesLocation && 
+                       matchesJobTitle && matchesCompany && matchesDate
             }
             .sorted { a, b in
                 currentSort.compare(a, b, order: sortOrder)
@@ -160,6 +171,8 @@ class JobApplicationViewModel: ObservableObject {
         searchText = ""
         selectedStatuses.removeAll()
         selectedLocations.removeAll()
+        selectedJobTitles.removeAll()
+        selectedCompanies.removeAll()
         dateRange = nil
     }
 } 

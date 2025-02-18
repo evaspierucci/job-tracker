@@ -122,9 +122,7 @@ struct HeaderRow: View {
                 onSort: { viewModel.toggleSort(.jobTitle) },
                 showingFilter: $showingJobTitleFilter
             ) {
-                // Job Title filter content
-                Text("Coming soon")
-                    .padding()
+                JobTitleFilterView(viewModel: viewModel)
             }
             
             ColumnHeader(
@@ -136,9 +134,7 @@ struct HeaderRow: View {
                 onSort: { viewModel.toggleSort(.company) },
                 showingFilter: $showingCompanyFilter
             ) {
-                // Company filter content
-                Text("Coming soon")
-                    .padding()
+                CompanyFilterView(viewModel: viewModel)
             }
             
             ColumnHeader(

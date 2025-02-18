@@ -101,4 +101,92 @@ struct LocationFilterView: View {
             .padding(.top)
         }
     }
+}
+
+struct JobTitleFilterView: View {
+    @ObservedObject var viewModel: JobApplicationViewModel
+    @State private var searchText = ""
+    
+    var uniqueJobTitles: [String] {
+        Array(Set(viewModel.applications.map { $0.jobTitle })).sorted()
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Filter by Job Title")
+                .font(.headline)
+            
+            TextField("Search job titles", text: $searchText)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+            
+            ScrollView {
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(uniqueJobTitles.filter { 
+                        searchText.isEmpty || $0.localizedCaseInsensitiveContains(searchText)
+                    }, id: \.self) { title in
+                        Toggle(title, isOn: Binding(
+                            get: { viewModel.selectedJobTitles.contains(title) },
+                            set: { isSelected in
+                                if isSelected {
+                                    viewModel.selectedJobTitles.insert(title)
+                                } else {
+                                    viewModel.selectedJobTitles.remove(title)
+                                }
+                            }
+                        ))
+                    }
+                }
+            }
+            .frame(maxHeight: 200)
+            
+            Button("Clear") {
+                viewModel.selectedJobTitles.removeAll()
+            }
+            .padding(.top)
+        }
+    }
+}
+
+struct CompanyFilterView: View {
+    @ObservedObject var viewModel: JobApplicationViewModel
+    @State private var searchText = ""
+    
+    var uniqueCompanies: [String] {
+        Array(Set(viewModel.applications.map { $0.companyName })).sorted()
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Filter by Company")
+                .font(.headline)
+            
+            TextField("Search companies", text: $searchText)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+            
+            ScrollView {
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(uniqueCompanies.filter { 
+                        searchText.isEmpty || $0.localizedCaseInsensitiveContains(searchText)
+                    }, id: \.self) { company in
+                        Toggle(company, isOn: Binding(
+                            get: { viewModel.selectedCompanies.contains(company) },
+                            set: { isSelected in
+                                if isSelected {
+                                    viewModel.selectedCompanies.insert(company)
+                                } else {
+                                    viewModel.selectedCompanies.remove(company)
+                                }
+                            }
+                        ))
+                    }
+                }
+            }
+            .frame(maxHeight: 200)
+            
+            Button("Clear") {
+                viewModel.selectedCompanies.removeAll()
+            }
+            .padding(.top)
+        }
+    }
 } 
