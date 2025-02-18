@@ -10,6 +10,8 @@ public class JobApplicationEntity: NSManagedObject {
     @NSManaged public var status: String?
     @NSManaged public var applicationLink: String?
     @NSManaged public var notes: String?
+    @NSManaged public var location: String?
+    @NSManaged public var locationType: String? // "remote", "city", or "other"
 }
 
 extension JobApplicationEntity {

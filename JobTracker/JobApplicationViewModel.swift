@@ -40,6 +40,7 @@ class JobApplicationViewModel: ObservableObject {
                     applicationDate: entity.applicationDate ?? Date(),
                     status: JobApplication.ApplicationStatus(rawValue: entity.status ?? "Applied") ?? .applied,
                     applicationLink: entity.applicationLink ?? "",
+                    location: JobApplication.Location.fromString(entity.location ?? "Remote"),
                     notes: entity.notes ?? ""
                 )
             }
@@ -56,6 +57,8 @@ class JobApplicationViewModel: ObservableObject {
         entity.applicationDate = Date()
         entity.status = JobApplication.ApplicationStatus.applied.rawValue
         entity.applicationLink = ""
+        entity.location = "Remote"
+        entity.locationType = "remote"
         entity.notes = ""
         
         save()
@@ -75,6 +78,19 @@ class JobApplicationViewModel: ObservableObject {
                 entity.status = application.status.rawValue
                 entity.applicationLink = application.applicationLink
                 entity.notes = application.notes
+                
+                switch application.location {
+                case .remote:
+                    entity.location = "Remote"
+                    entity.locationType = "remote"
+                case .city(let name):
+                    entity.location = name
+                    entity.locationType = "city"
+                case .other(let custom):
+                    entity.location = custom
+                    entity.locationType = "other"
+                }
+                
                 save()
             }
         } catch {

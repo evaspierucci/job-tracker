@@ -125,6 +125,10 @@ struct HeaderRow: View {
                 .frame(width: 120, alignment: .leading)
                 .padding(.leading, 8)
             
+            Text("Location")
+                .frame(width: 150, alignment: .leading)
+                .padding(.leading, 8)
+            
             Text("Link")
                 .frame(width: 150, alignment: .leading)
                 .padding(.leading, 8)
@@ -198,6 +202,11 @@ struct JobApplicationRow: View {
                     }
                     .frame(width: 120, alignment: .leading)
                 }
+                
+                LocationField(location: $application.location)
+                    .onChange(of: application.location) { oldValue, newValue in
+                        viewModel.updateApplication(application)
+                    }
                 
                 HStack(spacing: 4) {
                     TextField("Enter application link", text: $application.applicationLink)
