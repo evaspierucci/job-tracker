@@ -16,7 +16,7 @@ struct JobDashboardView: View {
                 SearchFilterView(viewModel: viewModel)
                 
                 // Header
-                HeaderRow()
+                HeaderRow(viewModel: viewModel)
                     .padding(.horizontal)
                     .background(colorScheme == .dark ? Color(white: 0.1) : .tableBackground)
                 
@@ -80,6 +80,7 @@ struct StatusView: View {
                     )
             )
             .contentShape(Rectangle())
+            .opacity(status == .archived ? 0.8 : 1.0)  // Slightly dim archived items
     }
 }
 
@@ -103,27 +104,78 @@ struct ProgressBar: View {
 }
 
 struct HeaderRow: View {
+    @ObservedObject var viewModel: JobApplicationViewModel
+    @State private var showingJobTitleFilter = false
+    @State private var showingCompanyFilter = false
+    @State private var showingDateFilter = false
+    @State private var showingStatusFilter = false
+    @State private var showingLocationFilter = false
+    
     var body: some View {
         HStack(spacing: 16) {
-            Text("Job Title")
-                .frame(width: 150, alignment: .leading)
-                .padding(.leading, 8)
+            ColumnHeader(
+                title: "Job Title",
+                sortOption: .jobTitle,
+                currentSort: viewModel.currentSort,
+                sortOrder: viewModel.sortOrder,
+                width: 150,
+                onSort: { viewModel.toggleSort(.jobTitle) },
+                showingFilter: $showingJobTitleFilter
+            ) {
+                // Job Title filter content
+                Text("Coming soon")
+                    .padding()
+            }
             
-            Text("Company")
-                .frame(width: 150, alignment: .leading)
-                .padding(.leading, 8)
+            ColumnHeader(
+                title: "Company",
+                sortOption: .company,
+                currentSort: viewModel.currentSort,
+                sortOrder: viewModel.sortOrder,
+                width: 150,
+                onSort: { viewModel.toggleSort(.company) },
+                showingFilter: $showingCompanyFilter
+            ) {
+                // Company filter content
+                Text("Coming soon")
+                    .padding()
+            }
             
-            Text("Date")
-                .frame(width: 100, alignment: .leading)
-                .padding(.leading, 8)
+            ColumnHeader(
+                title: "Date",
+                sortOption: .date,
+                currentSort: viewModel.currentSort,
+                sortOrder: viewModel.sortOrder,
+                width: 100,
+                onSort: { viewModel.toggleSort(.date) },
+                showingFilter: $showingDateFilter
+            ) {
+                DateFilterView(viewModel: viewModel)
+            }
             
-            Text("Status")
-                .frame(width: 120, alignment: .leading)
-                .padding(.leading, 8)
+            ColumnHeader(
+                title: "Status",
+                sortOption: .status,
+                currentSort: viewModel.currentSort,
+                sortOrder: viewModel.sortOrder,
+                width: 120,
+                onSort: { viewModel.toggleSort(.status) },
+                showingFilter: $showingStatusFilter
+            ) {
+                StatusFilterView(viewModel: viewModel)
+            }
             
-            Text("Location")
-                .frame(width: 150, alignment: .leading)
-                .padding(.leading, 8)
+            ColumnHeader(
+                title: "Location",
+                sortOption: .location,
+                currentSort: viewModel.currentSort,
+                sortOrder: viewModel.sortOrder,
+                width: 150,
+                onSort: { viewModel.toggleSort(.location) },
+                showingFilter: $showingLocationFilter
+            ) {
+                LocationFilterView(viewModel: viewModel)
+            }
             
             Text("Link")
                 .frame(width: 150, alignment: .leading)
@@ -297,6 +349,7 @@ struct JobApplicationRow: View {
 
 struct SearchFilterView: View {
     @ObservedObject var viewModel: JobApplicationViewModel
+    @State private var showingFilters = false
     
     var body: some View {
         VStack(spacing: 12) {
@@ -309,48 +362,83 @@ struct SearchFilterView: View {
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                 }
                 
-                // Status Filter
-                Picker("Status", selection: $viewModel.selectedStatus) {
-                    Text("All")
-                        .tag(nil as JobApplication.ApplicationStatus?)
-                    ForEach(JobApplication.ApplicationStatus.allCases, id: \.self) { status in
-                        Text(status.rawValue)
-                            .tag(status as JobApplication.ApplicationStatus?)
-                    }
-                }
-                .frame(width: 150)
-                
-                // Reset Button
-                Button(action: {
-                    withAnimation {
-                        viewModel.resetFilters()
-                    }
-                }) {
-                    Label("Reset", systemImage: "xmark.circle.fill")
-                }
-                .buttonStyle(.borderless)
-                .opacity(
-                    !viewModel.searchText.isEmpty || viewModel.selectedStatus != nil ? 1 : 0
-                )
-            }
-            .padding(.horizontal)
-            
-            // Filter Tags
-            if !viewModel.searchText.isEmpty || viewModel.selectedStatus != nil {
-                HStack(spacing: 8) {
-                    if !viewModel.searchText.isEmpty {
-                        FilterTag(text: "Search: \(viewModel.searchText)") {
-                            viewModel.searchText = ""
+                // Filter Button
+                Menu {
+                    // Status Filter
+                    Menu("Status") {
+                        ForEach(JobApplication.ApplicationStatus.allCases, id: \.self) { status in
+                            Toggle(status.rawValue, isOn: Binding(
+                                get: { viewModel.selectedStatuses.contains(status) },
+                                set: { isSelected in
+                                    if isSelected {
+                                        viewModel.selectedStatuses.insert(status)
+                                    } else {
+                                        viewModel.selectedStatuses.remove(status)
+                                    }
+                                }
+                            ))
                         }
                     }
                     
-                    if let status = viewModel.selectedStatus {
-                        FilterTag(text: "Status: \(status.rawValue)") {
-                            viewModel.selectedStatus = nil
+                    // Date Range Picker
+                    DatePicker(
+                        "Start Date",
+                        selection: Binding(
+                            get: { viewModel.dateRange?.lowerBound ?? Date() },
+                            set: { date in
+                                if let upper = viewModel.dateRange?.upperBound {
+                                    viewModel.dateRange = date...upper
+                                } else {
+                                    viewModel.dateRange = date...Date()
+                                }
+                            }
+                        ),
+                        displayedComponents: .date
+                    )
+                    
+                    DatePicker(
+                        "End Date",
+                        selection: Binding(
+                            get: { viewModel.dateRange?.upperBound ?? Date() },
+                            set: { date in
+                                if let lower = viewModel.dateRange?.lowerBound {
+                                    viewModel.dateRange = lower...date
+                                } else {
+                                    viewModel.dateRange = Date()...date
+                                }
+                            }
+                        ),
+                        displayedComponents: .date
+                    )
+                    
+                    Button("Clear Filters") {
+                        viewModel.resetFilters()
+                    }
+                } label: {
+                    Label("Filters", systemImage: "line.3.horizontal.decrease.circle")
+                        .foregroundColor(.blue)
+                }
+            }
+            .padding(.horizontal)
+            
+            // Active Filter Tags
+            if !viewModel.selectedStatuses.isEmpty || viewModel.dateRange != nil {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(Array(viewModel.selectedStatuses), id: \.self) { status in
+                            FilterTag(text: "Status: \(status.rawValue)") {
+                                viewModel.selectedStatuses.remove(status)
+                            }
+                        }
+                        
+                        if viewModel.dateRange != nil {
+                            FilterTag(text: "Date Range") {
+                                viewModel.dateRange = nil
+                            }
                         }
                     }
+                    .padding(.horizontal)
                 }
-                .padding(.horizontal)
             }
         }
         .padding(.vertical, 8)

@@ -9,16 +9,37 @@ class JobApplicationViewModel: ObservableObject {
     @Published var searchText = ""
     @Published var selectedStatus: JobApplication.ApplicationStatus?
     
+    @Published var currentSort: SortOption = .date
+    @Published var sortOrder: SortOrder = .descending
+    @Published var selectedStatuses: Set<JobApplication.ApplicationStatus> = []
+    @Published var selectedLocations: Set<String> = []
+    @Published var dateRange: ClosedRange<Date>?
+    
     var filteredApplications: [JobApplication] {
-        applications.filter { application in
-            let matchesSearch = searchText.isEmpty || 
-                application.jobTitle.localizedCaseInsensitiveContains(searchText) ||
-                application.companyName.localizedCaseInsensitiveContains(searchText)
-            
-            let matchesStatus = selectedStatus == nil || application.status == selectedStatus
-            
-            return matchesSearch && matchesStatus
-        }
+        applications
+            .filter { application in
+                let matchesSearch = searchText.isEmpty || 
+                    application.jobTitle.localizedCaseInsensitiveContains(searchText) ||
+                    application.companyName.localizedCaseInsensitiveContains(searchText)
+                
+                let matchesStatus = selectedStatuses.isEmpty || selectedStatuses.contains(application.status)
+                
+                let matchesLocation = selectedLocations.isEmpty || 
+                    selectedLocations.contains(application.location.displayString)
+                
+                let matchesDate = dateRange.map { range in
+                    range.contains(application.applicationDate)
+                } ?? true
+                
+                return matchesSearch && matchesStatus && matchesLocation && matchesDate
+            }
+            .sorted { a, b in
+                currentSort.compare(a, b, order: sortOrder)
+            }
+    }
+    
+    var uniqueLocations: Set<String> {
+        Set(applications.map { $0.location.displayString })
     }
     
     init(context: NSManagedObjectContext = PersistenceController.shared.container.viewContext) {
@@ -126,8 +147,19 @@ class JobApplicationViewModel: ObservableObject {
         return applications.indices.contains(index)
     }
     
+    func toggleSort(_ option: SortOption) {
+        if currentSort == option {
+            sortOrder.toggle()
+        } else {
+            currentSort = option
+            sortOrder = .ascending
+        }
+    }
+    
     func resetFilters() {
         searchText = ""
-        selectedStatus = nil
+        selectedStatuses.removeAll()
+        selectedLocations.removeAll()
+        dateRange = nil
     }
 } 
