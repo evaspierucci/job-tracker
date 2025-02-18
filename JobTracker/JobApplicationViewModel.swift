@@ -55,7 +55,7 @@ class JobApplicationViewModel: ObservableObject {
         entity.jobTitle = ""
         entity.companyName = ""
         entity.applicationDate = Date()
-        entity.status = JobApplication.ApplicationStatus.applied.rawValue
+        entity.status = JobApplication.ApplicationStatus.identified.rawValue
         entity.applicationLink = ""
         entity.location = "Remote"
         entity.locationType = "remote"

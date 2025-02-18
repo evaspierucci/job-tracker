@@ -67,23 +67,19 @@ struct StatusView: View {
     
     var body: some View {
         Text(status.rawValue)
-            .font(.subheadline)
-            .foregroundColor(status.color)
+            .font(.subheadline.weight(.medium))
+            .foregroundColor(status.iconColor)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
             .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(getBackgroundColor(for: status))
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(status.backgroundColor)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6)
+                            .strokeBorder(status.iconColor.opacity(0.3), lineWidth: 1)
+                    )
             )
-    }
-    
-    private func getBackgroundColor(for status: JobApplication.ApplicationStatus) -> Color {
-        switch status {
-        case .offerReceived: return Color.statusOfferBg
-        case .interviewing: return Color.statusInterviewingBg
-        case .applied: return Color.statusAppliedBg
-        case .rejected: return Color.statusRejectedBg
-        }
+            .contentShape(Rectangle())
     }
 }
 
@@ -186,21 +182,22 @@ struct JobApplicationRow: View {
                     ForEach(JobApplication.ApplicationStatus.allCases, id: \.self) { status in
                         Button(action: { 
                             withAnimation(.easeInOut(duration: 0.2)) {
-                                application.status = status 
+                                application.status = status
+                                viewModel.updateApplication(application)
                             }
                         }) {
-                            Label(status.rawValue, systemImage: "circle.fill")
-                                .foregroundColor(status.color)
+                            HStack {
+                                Circle()
+                                    .fill(status.iconColor)
+                                    .frame(width: 8, height: 8)
+                                Text(status.rawValue)
+                                    .foregroundColor(status.iconColor)
+                            }
                         }
                     }
                 } label: {
-                    HStack {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(application.status.color)
-                            .opacity(application.status == .offerReceived ? 1 : 0)
-                        StatusView(status: application.status)
-                    }
-                    .frame(width: 120, alignment: .leading)
+                    StatusView(status: application.status)
+                        .frame(width: 120, alignment: .leading)
                 }
                 
                 LocationField(location: $application.location)

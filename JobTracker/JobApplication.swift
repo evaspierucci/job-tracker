@@ -33,16 +33,28 @@ struct JobApplication: Identifiable {
     
     enum ApplicationStatus: String, CaseIterable {
         case applied = "Applied"
+        case identified = "Identified"
         case interviewing = "Interviewing"
         case offerReceived = "Offer Received"
         case rejected = "Rejected"
         
-        var color: Color {
+        var backgroundColor: Color {
             switch self {
-            case .applied: return .blue
-            case .interviewing: return .yellow
-            case .offerReceived: return .green
-            case .rejected: return .red
+            case .applied: return Color(red: 0.9, green: 0.95, blue: 1.0)  // Light blue
+            case .identified: return Color(red: 0.95, green: 0.95, blue: 0.95)   // Light gray
+            case .interviewing: return Color(red: 1.0, green: 0.95, blue: 0.8) // Light yellow
+            case .offerReceived: return Color(red: 0.9, green: 1.0, blue: 0.9) // Light green
+            case .rejected: return Color(red: 1.0, green: 0.9, blue: 0.9)    // Light red
+            }
+        }
+        
+        var iconColor: Color {
+            switch self {
+            case .applied: return Color.blue
+            case .identified: return Color.gray
+            case .interviewing: return Color.orange
+            case .offerReceived: return Color.green
+            case .rejected: return Color.red
             }
         }
     }
@@ -52,7 +64,7 @@ struct JobApplication: Identifiable {
         self.jobTitle = entity.jobTitle ?? ""
         self.companyName = entity.companyName ?? ""
         self.applicationDate = entity.applicationDate ?? Date()
-        self.status = ApplicationStatus(rawValue: entity.status ?? "Applied") ?? .applied
+        self.status = ApplicationStatus(rawValue: entity.status ?? "Identified") ?? .identified
         self.applicationLink = entity.applicationLink ?? ""
         self.location = Location.fromString(entity.location ?? "Remote")
         self.notes = entity.notes ?? ""
