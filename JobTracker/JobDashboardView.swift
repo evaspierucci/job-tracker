@@ -130,6 +130,7 @@ struct HeaderRow: View {
     
     var body: some View {
         HStack(spacing: TableLayout.spacing) {
+            // Job Title
             ColumnHeader(
                 title: "Job Title",
                 sortOption: .jobTitle,
@@ -142,6 +143,7 @@ struct HeaderRow: View {
                 JobTitleFilterView(viewModel: viewModel)
             }
             
+            // Company
             ColumnHeader(
                 title: "Company",
                 sortOption: .company,
@@ -154,18 +156,15 @@ struct HeaderRow: View {
                 CompanyFilterView(viewModel: viewModel)
             }
             
-            ColumnHeader(
-                title: "Application\nDate",
-                sortOption: .date,
-                currentSort: viewModel.currentSort,
-                sortOrder: viewModel.sortOrder,
-                width: TableLayout.date,
-                onSort: { viewModel.toggleSort(.date) },
-                showingFilter: $showingDateFilter
-            ) {
-                DateFilterView(viewModel: viewModel)
+            // Application Date
+            VStack(alignment: .leading) {
+                Text("Application")
+                Text("Date")
             }
+            .frame(width: TableLayout.date - TableLayout.horizontalPadding * 2, alignment: .leading)
+            .padding(.horizontal, TableLayout.horizontalPadding)
             
+            // Status
             ColumnHeader(
                 title: "Status",
                 sortOption: .status,
@@ -177,35 +176,23 @@ struct HeaderRow: View {
             ) {
                 StatusFilterView(viewModel: viewModel)
             }
-            .frame(width: TableLayout.status, alignment: .leading)
             
-            HStack {
-                ColumnHeader(
-                    title: "Location",
-                    sortOption: .location,
-                    currentSort: viewModel.currentSort,
-                    sortOrder: viewModel.sortOrder,
-                    width: TableLayout.location,
-                    onSort: { viewModel.toggleSort(.location) },
-                    showingFilter: $showingLocationFilter
-                ) {
-                    LocationFilterView(viewModel: viewModel)
-                }
-            }
-            .frame(width: TableLayout.location, alignment: .leading)
-            .padding(.leading, TableLayout.horizontalPadding)
-            
-            HStack {
-                Text("Link")
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .frame(width: TableLayout.link)
-            .padding(.leading, TableLayout.horizontalPadding)
-            
-            Text("Notes")
-                .frame(width: TableLayout.notes, alignment: .leading)
+            // Location
+            Text("Location")
+                .frame(width: TableLayout.location - TableLayout.horizontalPadding * 2, alignment: .leading)
                 .padding(.horizontal, TableLayout.horizontalPadding)
             
+            // Link
+            Text("Link")
+                .frame(width: TableLayout.link - TableLayout.horizontalPadding * 2, alignment: .leading)
+                .padding(.horizontal, TableLayout.horizontalPadding)
+            
+            // Notes
+            Text("Notes")
+                .frame(width: TableLayout.notes - TableLayout.horizontalPadding * 2, alignment: .leading)
+                .padding(.horizontal, TableLayout.horizontalPadding)
+            
+            // Actions
             Spacer()
                 .frame(width: TableLayout.actions)
         }
@@ -224,31 +211,25 @@ struct JobApplicationRow: View {
     
     var body: some View {
         HStack(spacing: TableLayout.spacing) {
+            // Job Title
             TextField("Job Title", text: $application.jobTitle)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
-                .frame(width: TableLayout.jobTitle)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-                .onChange(of: application.jobTitle) { _, _ in
-                    viewModel.updateApplication(application)
-                }
+                .frame(width: TableLayout.jobTitle - TableLayout.horizontalPadding * 2)
+                .padding(.horizontal, TableLayout.horizontalPadding)
             
+            // Company
             TextField("Company", text: $application.companyName)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
-                .frame(width: TableLayout.company)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-                .onChange(of: application.companyName) { _, _ in
-                    viewModel.updateApplication(application)
-                }
+                .frame(width: TableLayout.company - TableLayout.horizontalPadding * 2)
+                .padding(.horizontal, TableLayout.horizontalPadding)
             
+            // Date
             DatePicker("", selection: $application.applicationDate, displayedComponents: .date)
-                .frame(width: TableLayout.date)
+                .frame(width: TableLayout.date - TableLayout.horizontalPadding * 2)
+                .padding(.horizontal, TableLayout.horizontalPadding)
                 .labelsHidden()
-                .onChange(of: application.applicationDate) { _, _ in
-                    viewModel.updateApplication(application)
-                }
             
+            // Status
             Menu {
                 ForEach(JobApplication.ApplicationStatus.allCases, id: \.self) { status in
                     Button(action: { 
@@ -268,53 +249,38 @@ struct JobApplicationRow: View {
                 }
             } label: {
                 StatusView(status: application.status)
-                    .frame(width: TableLayout.status, alignment: .leading)
             }
+            .frame(width: TableLayout.status - TableLayout.horizontalPadding * 2)
+            .padding(.horizontal, TableLayout.horizontalPadding)
             
+            // Location
             LocationField(location: $application.location)
-                .frame(width: TableLayout.location)
-                .onChange(of: application.location) { _, _ in
-                    viewModel.updateApplication(application)
-                }
+                .frame(width: TableLayout.location - TableLayout.horizontalPadding * 2)
+                .padding(.horizontal, TableLayout.horizontalPadding)
             
+            // Link
             HStack(spacing: 4) {
                 TextField("Enter application link", text: $application.applicationLink)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-                    #if os(iOS)
-                    .keyboardType(.URL)
-                    .autocapitalization(.none)
-                    #endif
-                    .onChange(of: application.applicationLink) { _, _ in
-                        viewModel.updateApplication(application)
-                    }
-                
-                if let _ = URL(string: application.applicationLink),
-                   !application.applicationLink.isEmpty {
-                    Button(action: {
-                        openURL(application.applicationLink)
-                    }) {
+                if !application.applicationLink.isEmpty {
+                    Button(action: { openURL(application.applicationLink) }) {
                         Image(systemName: "arrow.up.right.circle")
                             .foregroundColor(.blue)
                     }
                     .buttonStyle(.plain)
                 }
             }
-            .frame(width: TableLayout.link)
+            .frame(width: TableLayout.link - TableLayout.horizontalPadding * 2)
+            .padding(.horizontal, TableLayout.horizontalPadding)
             
+            // Notes
             TextField("Notes", text: $application.notes)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
-                .frame(width: TableLayout.notes)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-                .onChange(of: application.notes) { _, _ in
-                    viewModel.updateApplication(application)
-                }
+                .frame(width: TableLayout.notes - TableLayout.horizontalPadding * 2)
+                .padding(.horizontal, TableLayout.horizontalPadding)
             
-            Button(action: {
-                showingDeleteAlert = true
-            }) {
+            // Delete button
+            Button(action: { showingDeleteAlert = true }) {
                 Image(systemName: "trash.fill")
                     .foregroundColor(Color.deleteButton)
                     .opacity(isHovered ? 1 : 0)
