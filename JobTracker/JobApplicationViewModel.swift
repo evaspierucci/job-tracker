@@ -32,13 +32,16 @@ class JobApplicationViewModel: ObservableObject {
             applicationLink: "",
             notes: ""
         )
-        withAnimation {
+        
+        // Add the new application with proper animation timing
+        withAnimation(.easeInOut(duration: 0.2)) {
             applications.append(newApplication)
         }
     }
     
+    // Update the delete method to handle animations properly
     func deleteApplication(at offsets: IndexSet) {
-        withAnimation {
+        withAnimation(.easeInOut(duration: 0.2)) {
             applications.remove(atOffsets: offsets)
         }
     }

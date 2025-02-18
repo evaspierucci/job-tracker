@@ -28,14 +28,17 @@ struct JobDashboardView: View {
                         } else {
                             ForEach($viewModel.applications) { $application in
                                 JobApplicationRow(application: $application) {
-                                    // Delete handler with safety check
                                     if let index = viewModel.applications.firstIndex(where: { $0.id == application.id }),
                                        viewModel.isValidIndex(index) {
                                         viewModel.applications.remove(at: index)
                                     }
                                 }
                                 .padding(.horizontal)
-                                .transition(.opacity.combined(with: .scale))
+                                .transition(.asymmetric(
+                                    insertion: .opacity.combined(with: .scale(scale: 0.95)),
+                                    removal: .opacity.combined(with: .scale(scale: 0.95))
+                                ))
+                                .id(application.id)  // Force proper view identity
                             }
                         }
                     }
@@ -143,7 +146,7 @@ struct JobApplicationRow: View {
     @Binding var application: JobApplication
     @State private var isHovered = false
     @State private var showingDeleteAlert = false
-    @State private var tempLink: String = ""
+    @State private var isVisible = false  // New state to control appearance
     var onDelete: () -> Void
     
     var body: some View {
@@ -201,7 +204,7 @@ struct JobApplicationRow: View {
                         .autocapitalization(.none)
                         #endif
                     
-                    if let url = URL(string: application.applicationLink), 
+                    if _ == URL(string: application.applicationLink), 
                        !application.applicationLink.isEmpty {
                         Button(action: {
                             openURL(application.applicationLink)
@@ -227,8 +230,9 @@ struct JobApplicationRow: View {
                 }) {
                     Image(systemName: "trash.fill")
                         .foregroundColor(Color.deleteButton)
-                        .opacity(isHovered ? 1 : 0)
+                        .opacity(isHovered || isVisible ? 1 : 0)
                 }
+                .frame(width: 24, height: 24)  // Fixed frame for consistency
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
@@ -239,12 +243,19 @@ struct JobApplicationRow: View {
                 .shadow(color: Color.rowShadow, radius: 4, x: 0, y: 2)
         )
         .scaleEffect(isHovered ? 1.02 : 1.0)
-        .animation(.easeInOut(duration: 0.2), value: isHovered)
         #if os(macOS)
         .onHover { hovering in
             isHovered = hovering
         }
         #endif
+        .onAppear {
+            // Ensure the row is fully rendered before showing hover effects
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isVisible = true
+                }
+            }
+        }
         .alert("Delete Job Application", isPresented: $showingDeleteAlert) {
             Button("Cancel", role: .cancel) { }
             Button("Delete", role: .destructive) {
