@@ -11,7 +11,7 @@ class JobApplicationViewModel: ObservableObject {
     
     @Published var currentSort: SortOption = .date
     @Published var sortOrder: SortOrder = .descending
-    @Published var selectedStatuses: Set<JobApplication.ApplicationStatus> = []
+    @Published var selectedStatuses: Set<JobApplication.ApplicationStatus>
     @Published var selectedLocations: Set<String> = []
     @Published var dateRange: ClosedRange<Date>?
     
@@ -25,8 +25,8 @@ class JobApplicationViewModel: ObservableObject {
                     application.jobTitle.localizedCaseInsensitiveContains(searchText) ||
                     application.companyName.localizedCaseInsensitiveContains(searchText)
                 
-                let matchesStatus = selectedStatuses.isEmpty || 
-                    selectedStatuses.contains(application.status)
+                let matchesStatus = (!selectedStatuses.isEmpty && selectedStatuses.contains(application.status)) ||
+                    (selectedStatuses.isEmpty && isActiveStatus(application.status))
                 
                 let matchesLocation = selectedLocations.isEmpty || 
                     selectedLocations.contains(application.location.displayString)
@@ -55,6 +55,9 @@ class JobApplicationViewModel: ObservableObject {
     
     init(context: NSManagedObjectContext = PersistenceController.shared.container.viewContext) {
         self.viewContext = context
+        self.selectedStatuses = Set(JobApplication.ApplicationStatus.allCases.filter { 
+            [.identified, .applied, .interviewing, .accepted].contains($0)
+        })
         loadApplications()
     }
     
@@ -171,10 +174,16 @@ class JobApplicationViewModel: ObservableObject {
     
     func resetFilters() {
         searchText = ""
-        selectedStatuses.removeAll()
+        selectedStatuses = Set(JobApplication.ApplicationStatus.allCases.filter { 
+            [.identified, .applied, .interviewing, .accepted].contains($0)
+        })
         selectedLocations.removeAll()
         selectedJobTitles.removeAll()
         selectedCompanies.removeAll()
         dateRange = nil
+    }
+    
+    private func isActiveStatus(_ status: JobApplication.ApplicationStatus) -> Bool {
+        return [.identified, .applied, .interviewing, .accepted].contains(status)
     }
 } 
