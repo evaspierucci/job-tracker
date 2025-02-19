@@ -7,6 +7,11 @@ enum TableLayout {
     static let status: CGFloat = 100       // Narrower, just enough for status pills
     static let location: CGFloat = 120    // Wider for longer city names
     static let link: CGFloat = 160        // Adequate for URLs
+    static let jobDescription: CGFloat = 300    // Wide for detailed descriptions
+    static let datePosted: CGFloat = 140       // Same as application date
+    static let salaryRange: CGFloat = 160      // Enough for salary formats
+    static let qualifications: CGFloat = 300    // Wide for requirement lists
+    static let companyDescription: CGFloat = 300 // Wide for company details
     static let notes: CGFloat = 200       // Wide for notes
     static let actions: CGFloat = 40      // Delete button
     

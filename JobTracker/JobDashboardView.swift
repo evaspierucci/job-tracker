@@ -87,9 +87,14 @@ struct JobDashboardView: View {
         TableLayout.status +
         TableLayout.location +
         TableLayout.link +
+        TableLayout.jobDescription +
+        TableLayout.datePosted +
+        TableLayout.salaryRange +
+        TableLayout.qualifications +
+        TableLayout.companyDescription +
         TableLayout.notes +
         TableLayout.actions +
-        (TableLayout.spacing * 7) +
+        (TableLayout.spacing * 12) +
         (TableLayout.horizontalPadding * 2) +
         TableLayout.scrollbarPadding
     }
@@ -203,6 +208,27 @@ struct HeaderRow: View {
                 .frame(width: TableLayout.link - TableLayout.horizontalPadding * 2, alignment: .leading)
                 .padding(.horizontal, TableLayout.horizontalPadding)
             
+            // New optional columns
+            Text("Job Description")
+                .frame(width: TableLayout.jobDescription - TableLayout.horizontalPadding * 2, alignment: .leading)
+                .padding(.horizontal, TableLayout.horizontalPadding)
+            
+            Text("Date Posted")
+                .frame(width: TableLayout.datePosted - TableLayout.horizontalPadding * 2, alignment: .leading)
+                .padding(.horizontal, TableLayout.horizontalPadding)
+            
+            Text("Salary Range")
+                .frame(width: TableLayout.salaryRange - TableLayout.horizontalPadding * 2, alignment: .leading)
+                .padding(.horizontal, TableLayout.horizontalPadding)
+            
+            Text("Required Qualifications")
+                .frame(width: TableLayout.qualifications - TableLayout.horizontalPadding * 2, alignment: .leading)
+                .padding(.horizontal, TableLayout.horizontalPadding)
+            
+            Text("Company Description")
+                .frame(width: TableLayout.companyDescription - TableLayout.horizontalPadding * 2, alignment: .leading)
+                .padding(.horizontal, TableLayout.horizontalPadding)
+            
             // Notes
             Text("Notes")
                 .frame(width: TableLayout.notes - TableLayout.horizontalPadding * 2, alignment: .leading)
@@ -288,6 +314,47 @@ struct JobApplicationRow: View {
                 }
             }
             .frame(width: TableLayout.link - TableLayout.horizontalPadding * 2)
+            .padding(.horizontal, TableLayout.horizontalPadding)
+            
+            // New optional columns
+            TextField("Job Description", text: Binding(
+                get: { application.jobDescription ?? "" },
+                set: { application.jobDescription = $0 }
+            ))
+            .textFieldStyle(RoundedBorderTextFieldStyle())
+            .frame(width: TableLayout.jobDescription - TableLayout.horizontalPadding * 2)
+            .padding(.horizontal, TableLayout.horizontalPadding)
+            
+            DatePicker("", selection: Binding(
+                get: { application.datePosted ?? Date() },
+                set: { application.datePosted = $0 }
+            ), displayedComponents: .date)
+            .frame(width: TableLayout.datePosted - TableLayout.horizontalPadding * 2)
+            .padding(.horizontal, TableLayout.horizontalPadding)
+            .labelsHidden()
+            
+            TextField("Salary Range", text: Binding(
+                get: { application.salaryRange ?? "" },
+                set: { application.salaryRange = $0 }
+            ))
+            .textFieldStyle(RoundedBorderTextFieldStyle())
+            .frame(width: TableLayout.salaryRange - TableLayout.horizontalPadding * 2)
+            .padding(.horizontal, TableLayout.horizontalPadding)
+            
+            TextField("Required Qualifications", text: Binding(
+                get: { application.requiredQualifications ?? "" },
+                set: { application.requiredQualifications = $0 }
+            ))
+            .textFieldStyle(RoundedBorderTextFieldStyle())
+            .frame(width: TableLayout.qualifications - TableLayout.horizontalPadding * 2)
+            .padding(.horizontal, TableLayout.horizontalPadding)
+            
+            TextField("Company Description", text: Binding(
+                get: { application.companyDescription ?? "" },
+                set: { application.companyDescription = $0 }
+            ))
+            .textFieldStyle(RoundedBorderTextFieldStyle())
+            .frame(width: TableLayout.companyDescription - TableLayout.horizontalPadding * 2)
             .padding(.horizontal, TableLayout.horizontalPadding)
             
             // Notes
