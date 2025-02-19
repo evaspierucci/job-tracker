@@ -32,10 +32,10 @@ struct JobApplication: Identifiable {
     }
     
     enum ApplicationStatus: String, CaseIterable {
-        case applied = "Applied"
         case identified = "Identified"
+        case applied = "Applied"
         case interviewing = "Interviewing"
-        case offerReceived = "Offer Received"
+        case accepted = "Accepted"
         case rejected = "Rejected"
         case archived = "Archived"
         
@@ -44,7 +44,7 @@ struct JobApplication: Identifiable {
             case .identified: return 0
             case .applied: return 1
             case .interviewing: return 2
-            case .offerReceived: return 3
+            case .accepted: return 3
             case .rejected: return 4
             case .archived: return 5
             }
@@ -55,9 +55,9 @@ struct JobApplication: Identifiable {
             case .applied: return Color(red: 0.9, green: 0.95, blue: 1.0)    // Light blue
             case .identified: return Color(red: 0.95, green: 0.95, blue: 0.95) // Light gray
             case .interviewing: return Color(red: 1.0, green: 0.95, blue: 0.8) // Light yellow
-            case .offerReceived: return Color(red: 0.9, green: 1.0, blue: 0.9) // Light green
-            case .rejected: return Color(red: 1.0, green: 0.9, blue: 0.9)     // Light red
-            case .archived: return Color(red: 0.92, green: 0.92, blue: 0.92)  // Light gray for archived
+            case .accepted: return Color(red: 0.9, green: 1.0, blue: 0.9)    // Light green
+            case .rejected: return Color(red: 1.0, green: 0.9, blue: 0.9)    // Light red
+            case .archived: return Color(red: 0.92, green: 0.92, blue: 0.92) // Light gray for archived
             }
         }
         
@@ -66,7 +66,7 @@ struct JobApplication: Identifiable {
             case .applied: return Color.blue
             case .identified: return Color.gray
             case .interviewing: return Color.orange
-            case .offerReceived: return Color.green
+            case .accepted: return Color.green
             case .rejected: return Color.red
             case .archived: return Color(white: 0.5)  // Medium gray for archived
             }

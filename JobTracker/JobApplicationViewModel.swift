@@ -70,7 +70,7 @@ class JobApplicationViewModel: ObservableObject {
                     jobTitle: entity.jobTitle ?? "",
                     companyName: entity.companyName ?? "",
                     applicationDate: entity.applicationDate ?? Date(),
-                    status: JobApplication.ApplicationStatus(rawValue: entity.status ?? "Applied") ?? .applied,
+                    status: JobApplication.ApplicationStatus(rawValue: entity.status ?? "") ?? .applied,
                     applicationLink: entity.applicationLink ?? "",
                     location: JobApplication.Location.fromString(entity.location ?? "Remote"),
                     notes: entity.notes ?? ""
@@ -124,6 +124,7 @@ class JobApplicationViewModel: ObservableObject {
                 }
                 
                 save()
+                loadApplications()
             }
         } catch {
             print("Error updating application: \(error)")
@@ -149,6 +150,7 @@ class JobApplicationViewModel: ObservableObject {
     private func save() {
         do {
             try viewContext.save()
+            print("Successfully saved context with status updates")
         } catch {
             print("Error saving context: \(error)")
         }

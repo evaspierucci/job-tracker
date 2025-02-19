@@ -234,8 +234,9 @@ struct JobApplicationRow: View {
                 ForEach(JobApplication.ApplicationStatus.allCases, id: \.self) { status in
                     Button(action: { 
                         withAnimation(.easeInOut(duration: 0.2)) {
-                            application.status = status
-                            viewModel.updateApplication(application)
+                            var updatedApplication = application
+                            updatedApplication.status = status
+                            viewModel.updateApplication(updatedApplication)
                         }
                     }) {
                         HStack {
