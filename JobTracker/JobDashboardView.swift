@@ -46,6 +46,7 @@ struct JobDashboardView: View {
                         .listStyle(.plain)
                     }
                     .frame(minWidth: totalWidth)
+                    .padding(.trailing, TableLayout.scrollbarPadding)
                 }
                 .background(colorScheme == .dark ? Color(white: 0.1) : AppColors.table)
             }
@@ -89,7 +90,8 @@ struct JobDashboardView: View {
         TableLayout.notes +
         TableLayout.actions +
         (TableLayout.spacing * 7) +
-        (TableLayout.horizontalPadding * 2)
+        (TableLayout.horizontalPadding * 2) +
+        TableLayout.scrollbarPadding
     }
 }
 
@@ -301,6 +303,7 @@ struct JobApplicationRow: View {
                     .opacity(isHovered ? 1 : 0)
             }
             .frame(width: TableLayout.actions)
+            .padding(.trailing, TableLayout.horizontalPadding)
         }
         .padding(.horizontal, TableLayout.horizontalPadding)
         .padding(.vertical, 5)

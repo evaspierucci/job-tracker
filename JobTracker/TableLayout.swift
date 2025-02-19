@@ -10,6 +10,7 @@ enum TableLayout {
     static let notes: CGFloat = 200       // Wide for notes
     static let actions: CGFloat = 40      // Delete button
     
-    static let spacing: CGFloat = 2
+    static let spacing: CGFloat = 2       // Space between columns
     static let horizontalPadding: CGFloat = 2
+    static let scrollbarPadding: CGFloat = 16  // Added padding for scrollbar
 } 
