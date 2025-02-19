@@ -12,6 +12,11 @@ public class JobApplicationEntity: NSManagedObject {
     @NSManaged public var notes: String?
     @NSManaged public var location: String?
     @NSManaged public var locationType: String? // "remote", "city", or "other"
+    @NSManaged public var jobDescription: String?
+    @NSManaged public var datePosted: Date?
+    @NSManaged public var salaryRange: String?
+    @NSManaged public var requiredQualifications: String?
+    @NSManaged public var companyDescription: String?
 }
 
 extension JobApplicationEntity {

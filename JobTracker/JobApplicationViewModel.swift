@@ -186,4 +186,27 @@ class JobApplicationViewModel: ObservableObject {
     private func isActiveStatus(_ status: JobApplication.ApplicationStatus) -> Bool {
         return [.identified, .applied, .interviewing, .accepted].contains(status)
     }
+    
+    func addApplicationWithLink(_ link: String) {
+        let entity = JobApplicationEntity(context: viewContext)
+        entity.id = UUID()
+        entity.jobTitle = ""
+        entity.companyName = ""
+        entity.applicationDate = Date()
+        entity.status = JobApplication.ApplicationStatus.identified.rawValue
+        entity.applicationLink = link
+        entity.location = "Remote"
+        entity.locationType = "remote"
+        entity.notes = ""
+        
+        // Initialize new fields
+        entity.jobDescription = nil
+        entity.datePosted = nil
+        entity.salaryRange = nil
+        entity.requiredQualifications = nil
+        entity.companyDescription = nil
+        
+        save()
+        loadApplications()
+    }
 } 

@@ -12,6 +12,13 @@ struct JobApplication: Identifiable {
     var location: Location
     var notes: String
     
+    // New optional fields
+    var jobDescription: String?
+    var datePosted: Date?
+    var salaryRange: String?
+    var requiredQualifications: String?
+    var companyDescription: String?
+    
     enum Location: Equatable {
         case remote
         case city(String)
@@ -82,6 +89,11 @@ struct JobApplication: Identifiable {
         self.applicationLink = entity.applicationLink ?? ""
         self.location = Location.fromString(entity.location ?? "Remote")
         self.notes = entity.notes ?? ""
+        self.jobDescription = entity.jobDescription
+        self.datePosted = entity.datePosted
+        self.salaryRange = entity.salaryRange
+        self.requiredQualifications = entity.requiredQualifications
+        self.companyDescription = entity.companyDescription
     }
     
     init(id: UUID = UUID(), 

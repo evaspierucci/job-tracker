@@ -8,6 +8,7 @@ import UIKit
 struct JobDashboardView: View {
     @StateObject private var viewModel = JobApplicationViewModel()
     @Environment(\.colorScheme) var colorScheme
+    @State private var showingImportJob = false
     
     var body: some View {
         NavigationView {
@@ -20,7 +21,7 @@ struct JobDashboardView: View {
                     VStack(spacing: 0) {
                         // Header
                         HeaderRow(viewModel: viewModel)
-                            .background(colorScheme == .dark ? Color(white: 0.1) : .tableBackground)
+                            .background(colorScheme == .dark ? Color(white: 0.1) : AppColors.table)
                         
                         // Job Applications List
                         List {
@@ -46,21 +47,34 @@ struct JobDashboardView: View {
                     }
                     .frame(minWidth: totalWidth)
                 }
-                .background(colorScheme == .dark ? Color(white: 0.1) : .tableBackground)
+                .background(colorScheme == .dark ? Color(white: 0.1) : AppColors.table)
             }
             .navigationTitle("Job Applications")
             .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button(action: {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            viewModel.addApplication()
+                ToolbarItem(placement: .automatic) {
+                    HStack {
+                        Button(action: {
+                            showingImportJob = true
+                        }) {
+                            Image(systemName: "square.and.arrow.down")
+                                .font(.title2)
+                                .foregroundColor(AppColors.import_)
                         }
-                    }) {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title2)
-                            .foregroundColor(Color.addButton)
+                        
+                        Button(action: {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                viewModel.addApplication()
+                            }
+                        }) {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.title2)
+                                .foregroundColor(AppColors.add)
+                        }
                     }
                 }
+            }
+            .sheet(isPresented: $showingImportJob) {
+                ImportJobView(viewModel: viewModel)
             }
         }
     }
@@ -108,10 +122,10 @@ struct ProgressBar: View {
         GeometryReader { geometry in
             ZStack(alignment: .leading) {
                 Rectangle()
-                    .fill(Color.progressBarBackground)
+                    .fill(AppColors.progressBg)
                 
                 Rectangle()
-                    .fill(Color.progressBar)
+                    .fill(AppColors.progress)
                     .frame(width: geometry.size.width * progress)
             }
         }
@@ -283,7 +297,7 @@ struct JobApplicationRow: View {
             // Delete button
             Button(action: { showingDeleteAlert = true }) {
                 Image(systemName: "trash.fill")
-                    .foregroundColor(Color.deleteButton)
+                    .foregroundColor(AppColors.delete)
                     .opacity(isHovered ? 1 : 0)
             }
             .frame(width: TableLayout.actions)
@@ -292,8 +306,8 @@ struct JobApplicationRow: View {
         .padding(.vertical, 5)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(Color.rowFill)
-                .shadow(color: Color.rowShadow, radius: 4, x: 0, y: 2)
+                .fill(AppColors.row)
+                .shadow(color: AppColors.shadow, radius: 4, x: 0, y: 2)
         )
         .scaleEffect(isHovered ? 1.02 : 1.0)
         #if os(macOS)
@@ -413,7 +427,7 @@ struct SearchFilterView: View {
             }
         }
         .padding(.vertical, 8)
-        .background(Color.tableBackground)
+        .background(AppColors.table)
     }
 }
 
