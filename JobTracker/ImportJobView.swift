@@ -4,8 +4,6 @@ struct ImportJobView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var viewModel: JobApplicationViewModel
     @State private var jobLink: String = ""
-    @State private var isProcessing = false
-    @State private var errorMessage: String?
     
     var body: some View {
         VStack(spacing: 16) {
@@ -16,14 +14,9 @@ struct ImportJobView: View {
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .frame(width: 400)
             
-            if let error = errorMessage {
-                Text(error)
-                    .foregroundColor(.red)
-                    .font(.caption)
-            }
-            
             HStack(spacing: 12) {
                 Button("Cancel") {
+                    jobLink = ""
                     dismiss()
                 }
                 .keyboardShortcut(.escape)
@@ -32,7 +25,7 @@ struct ImportJobView: View {
                     createJobFromLink()
                 }
                 .keyboardShortcut(.return)
-                .disabled(jobLink.isEmpty || isProcessing)
+                .disabled(jobLink.isEmpty)
             }
         }
         .padding()
@@ -41,8 +34,6 @@ struct ImportJobView: View {
     
     private func createJobFromLink() {
         guard !jobLink.isEmpty else { return }
-        
-        // For now, just create a new job with the link
         viewModel.addApplicationWithLink(jobLink)
         dismiss()
     }

@@ -190,7 +190,7 @@ class JobApplicationViewModel: ObservableObject {
     func addApplicationWithLink(_ link: String) {
         let entity = JobApplicationEntity(context: viewContext)
         entity.id = UUID()
-        entity.jobTitle = ""
+        entity.jobTitle = "New Job"
         entity.companyName = ""
         entity.applicationDate = Date()
         entity.status = JobApplication.ApplicationStatus.identified.rawValue
@@ -199,14 +199,34 @@ class JobApplicationViewModel: ObservableObject {
         entity.locationType = "remote"
         entity.notes = ""
         
-        // Initialize new fields
-        entity.jobDescription = nil
-        entity.datePosted = nil
-        entity.salaryRange = nil
-        entity.requiredQualifications = nil
-        entity.companyDescription = nil
+        // Add to current applications immediately
+        let newApplication = JobApplication(
+            id: entity.id ?? UUID(),
+            jobTitle: entity.jobTitle ?? "",
+            companyName: entity.companyName ?? "",
+            applicationDate: entity.applicationDate ?? Date(),
+            status: .identified,
+            applicationLink: link,
+            location: .remote,
+            notes: ""
+        )
         
-        save()
-        loadApplications()
+        // Update UI immediately
+        withAnimation {
+            applications.insert(newApplication, at: 0)
+        }
+        
+        // Save in background
+        Task {
+            await save()
+        }
+    }
+    
+    private func save() async {
+        do {
+            try viewContext.save()
+        } catch {
+            print("Error saving context: \(error)")
+        }
     }
 } 
