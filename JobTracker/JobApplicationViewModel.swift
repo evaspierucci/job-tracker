@@ -68,16 +68,7 @@ class JobApplicationViewModel: ObservableObject {
         do {
             let entities = try viewContext.fetch(request)
             applications = entities.map { entity in
-                JobApplication(
-                    id: entity.id ?? UUID(),
-                    jobTitle: entity.jobTitle ?? "",
-                    companyName: entity.companyName ?? "",
-                    applicationDate: entity.applicationDate ?? Date(),
-                    status: JobApplication.ApplicationStatus(rawValue: entity.status ?? "") ?? .applied,
-                    applicationLink: entity.applicationLink ?? "",
-                    location: JobApplication.Location.fromString(entity.location ?? "Remote"),
-                    notes: entity.notes ?? ""
-                )
+                JobApplication(entity: entity)
             }
         } catch {
             print("Error fetching applications: \(error)")
@@ -96,6 +87,13 @@ class JobApplicationViewModel: ObservableObject {
         entity.locationType = "remote"
         entity.notes = ""
         
+        // Initialize new fields as empty
+        entity.jobDescription = nil
+        entity.datePosted = nil
+        entity.salaryRange = nil
+        entity.requiredQualifications = nil
+        entity.companyDescription = nil
+        
         save()
         loadApplications()
     }
@@ -113,6 +111,13 @@ class JobApplicationViewModel: ObservableObject {
                 entity.status = application.status.rawValue
                 entity.applicationLink = application.applicationLink
                 entity.notes = application.notes
+                
+                // Update new fields
+                entity.jobDescription = application.jobDescription
+                entity.datePosted = application.datePosted
+                entity.salaryRange = application.salaryRange
+                entity.requiredQualifications = application.requiredQualifications
+                entity.companyDescription = application.companyDescription
                 
                 switch application.location {
                 case .remote:

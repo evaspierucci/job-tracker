@@ -1,26 +1,22 @@
 import CoreData
 
-class PersistenceController {
+struct PersistenceController {
     static let shared = PersistenceController()
     
     let container: NSPersistentContainer
     
-    init() {
-        // Ensure the model URL is found
-        guard let modelURL = Bundle.main.url(forResource: "JobTracker", withExtension: "momd"),
-              let model = NSManagedObjectModel(contentsOf: modelURL) else {
-            fatalError("Failed to load Core Data model")
-        }
+    init(inMemory: Bool = false) {
+        container = NSPersistentContainer(name: "JobTracker")
         
-        container = NSPersistentContainer(name: "JobTracker", managedObjectModel: model)
-        
+        // Enable automatic lightweight migration
+        let description = container.persistentStoreDescriptions.first
+        description?.shouldMigrateStoreAutomatically = true
+        description?.shouldInferMappingModelAutomatically = true
+
         container.loadPersistentStores { description, error in
             if let error = error {
                 print("Core Data failed to load: \(error.localizedDescription)")
-                return
             }
-            
-            self.container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
         }
     }
     

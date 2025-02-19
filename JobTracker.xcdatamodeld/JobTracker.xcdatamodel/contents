@@ -3,12 +3,17 @@
     <entity name="JobApplicationEntity" representedClassName="JobApplicationEntity" syncable="YES">
         <attribute name="applicationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="applicationLink" optional="YES" attributeType="String"/>
+        <attribute name="companyDescription" optional="YES" attributeType="String"/>
         <attribute name="companyName" optional="YES" attributeType="String"/>
+        <attribute name="datePosted" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="jobDescription" optional="YES" attributeType="String"/>
         <attribute name="jobTitle" optional="YES" attributeType="String"/>
         <attribute name="location" optional="YES" attributeType="String"/>
         <attribute name="locationType" optional="YES" attributeType="String"/>
         <attribute name="notes" optional="YES" attributeType="String"/>
+        <attribute name="requiredQualifications" optional="YES" attributeType="String"/>
+        <attribute name="salaryRange" optional="YES" attributeType="String"/>
         <attribute name="status" optional="YES" attributeType="String"/>
     </entity>
 </model>

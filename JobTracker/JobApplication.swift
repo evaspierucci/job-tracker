@@ -85,10 +85,12 @@ struct JobApplication: Identifiable {
         self.jobTitle = entity.jobTitle ?? ""
         self.companyName = entity.companyName ?? ""
         self.applicationDate = entity.applicationDate ?? Date()
-        self.status = ApplicationStatus(rawValue: entity.status ?? "Identified") ?? .identified
+        self.status = ApplicationStatus(rawValue: entity.status ?? "") ?? .applied
         self.applicationLink = entity.applicationLink ?? ""
         self.location = Location.fromString(entity.location ?? "Remote")
         self.notes = entity.notes ?? ""
+        
+        // Initialize new fields from entity
         self.jobDescription = entity.jobDescription
         self.datePosted = entity.datePosted
         self.salaryRange = entity.salaryRange
